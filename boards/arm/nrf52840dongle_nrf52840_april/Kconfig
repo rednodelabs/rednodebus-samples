@@ -1,0 +1,20 @@
+# nRF52840 Dongle NRF52840 April board configuration
+
+# Copyright (c) 2021 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_NRF52840DONGLE_NRF52840_APRIL
+
+config BOARD_ENABLE_DCDC
+	bool "Enable DCDC mode"
+	select SOC_DCDC_NRF52X
+	default y
+
+config BOARD_HAS_ADAFRUIT_BOOTLOADER
+	bool "Board has Adafruit bootloader"
+	default y
+	help
+	  If selected, applications are linked so that they can be loaded by
+	  Adafruit bootloader.
+
+endif # BOARD_NRF52840DONGLE_NRF52840

@@ -1,0 +1,73 @@
+manifest:
+  remotes:
+    - name: rednodelabs
+      url-base: https://github.com/rednodelabs
+    - name: ncs
+      url-base: https://github.com/nrfconnect
+  projects:
+    - name: nrf
+      repo-path: sdk-nrf
+      remote: ncs
+      # revision: v1.6.1
+      revision: b6deb62f2f2365a9785142fd0ab9f0a79ce1745c
+      import:
+        name-blocklist:
+          - zephyr
+    - name: zephyr
+      remote: rednodelabs
+      # revision: rnl/rednodebus-capability-v2.6.0-rc1-ncs1-rc1
+      # revision: rnl/rednodebus-capability-latest
+      revision: feature/ot-br-integration
+      import:
+        # In addition to the zephyr repository itself, NCS also
+        # imports the contents of zephyr/west.yml at the above
+        # revision. Only the projects explicitly named in the
+        # following allowlist are imported.
+        #
+        # Note that the zephyr west extensions (like 'build', 'flash',
+        # 'debug', etc.) are automatically provided by this import, so
+        # there's no need to add a redundant west-commands: key for
+        # the zephyr project.
+        #
+        # Please keep this list sorted alphabetically.
+        name-allowlist:
+          - TraceRecorderSource
+          - canopennode
+          - civetweb
+          - cmsis
+          - edtt
+          - fatfs
+          - hal_nordic
+          - hal_st
+          - libmetal
+          - littlefs
+          - loramac-node
+          - lvgl
+          - lz4
+          - mbedtls
+          - mcumgr
+          - mipi-sys-t
+          - nanopb
+          - net-tools
+          - nrf_hw_models
+          - open-amp
+          # - openthread
+          - segger
+          - tinycbor
+          - tinycrypt
+    - name: openthread
+      remote: rednodelabs
+      # revision: cdb9570901e87ab247aed0a96ccd8f94beee5834
+      # revision: rnl/rednodebus-capability
+      revision: rnl/rednodebus-capability-latest
+      path: modules/lib/openthread
+    - name: ot-br-posix
+      remote: rednodelabs
+      revision: rnl/rednodebus-capability-latest
+    - name: rednodebus
+      remote: rednodelabs
+      revision: feature/only-driver
+      groups:
+        - rnl-int
+  self:
+    path: rednodebus-samples

@@ -1,0 +1,26 @@
+# Insightsip ISP3010 DEV board configuration
+
+# Copyright (c) 2021 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_INSIGHTSIP_ISP3010_DEV
+
+config BOARD
+	default "insightsip_isp3010_dev"
+
+config BT_CTLR
+	default BT
+
+config SPI
+	default y
+	depends on IEEE802154
+
+config IEEE802154_DW1000
+	default y
+	depends on IEEE802154
+
+config NET_CONFIG_IEEE802154_DEV_NAME
+	default IEEE802154_NRF5_DRV_NAME if REDNODEBUS
+	default "DW1000"
+
+endif # BOARD_INSIGHTSIP_ISP3010_DEV
