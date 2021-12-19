@@ -1,0 +1,10 @@
+/*
+ * Copyright (c) 2022 RedNodeLabs
+ */
+
+/* rnb_coprocessor_version.c.in */
+
+#include "rnb_coprocessor_version.h"
+
+
+const char *m_rnb_coprocessor_version = "@COPROCESSOR_GIT_HASH@";

@@ -1,0 +1,71 @@
+manifest:
+  remotes:
+    - name: rnl
+      url-base: https://github.com/rednodelabs
+    - name: ncs
+      url-base: https://github.com/nrfconnect
+  projects:
+    - name: nrf
+      repo-path: sdk-nrf
+      remote: ncs
+      revision: v1.7.1
+      import:
+        name-blocklist:
+          - zephyr
+          - openthread
+    - name: zephyr
+      remote: rnl
+      revision: main
+      import:
+        # In addition to the zephyr repository itself, NCS also
+        # imports the contents of zephyr/west.yml at the above
+        # revision. Only the projects explicitly named in the
+        # following allowlist are imported.
+        #
+        # Note that the zephyr west extensions (like 'build', 'flash',
+        # 'debug', etc.) are automatically provided by this import, so
+        # there's no need to add a redundant west-commands: key for
+        # the zephyr project.
+        #
+        # Please keep this list sorted alphabetically.
+        name-allowlist:
+          - TraceRecorderSource
+          - canopennode
+          - civetweb
+          - cmsis
+          - edtt
+          - fatfs
+          - hal_nordic
+          - hal_st
+          - libmetal
+          - littlefs
+          - loramac-node
+          - lvgl
+          - lz4
+          - mbedtls
+          - mcumgr
+          - mipi-sys-t
+          - nanopb
+          - net-tools
+          - nrf_hw_models
+          - open-amp
+          - segger
+          - tinycbor
+          - tinycrypt
+    - name: openthread
+      remote: rnl
+      revision: main
+      path: modules/lib/openthread
+    - name: rednodebus
+      remote: rnl
+      revision: main
+      groups:
+        - rnl-pri
+    - name: rednodebus-release
+      remote: rnl
+      revision: main
+      groups:
+        - rnl-pub
+  group-filter: [+rnl-pub,-rnl-pri]
+  self:
+    path: rednodebus-samples
