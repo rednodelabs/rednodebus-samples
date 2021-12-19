@@ -65,5 +65,11 @@ manifest:
       revision: feature/only-driver
       groups:
         - rnl-int
+    - name: rednodebus-release
+      remote: rednodelabs
+      revision: develop
+      groups:
+        - rnl-pub
+  group-filter: [+rnl-pub,-rnl-int]
   self:
     path: rednodebus-samples
