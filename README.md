@@ -4,7 +4,7 @@
 ```
 mkdir zephyr-workspace
 cd zephyr-workspace
-west init -m git@github.com:rednodelabs/rednodebus.git
+west init -m git@github.com:rednodelabs/rednodebus-samples.git
 west update
 ```
 
