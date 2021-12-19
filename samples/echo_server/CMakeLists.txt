@@ -43,4 +43,4 @@ foreach(inc_file
     )
 endforeach()
 
-target_link_libraries(app PUBLIC rnb_nrf_lib)
+#target_link_libraries(app PUBLIC rnb_nrf_lib)
