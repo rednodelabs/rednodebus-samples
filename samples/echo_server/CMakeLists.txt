@@ -44,3 +44,8 @@ foreach(inc_file
 endforeach()
 
 #target_link_libraries(app PUBLIC rnb_nrf_lib)
+
+# TODO: These has to be done through kconfig or fix then in the code in the alternative
+target_compile_definitions(app PUBLIC CONFIG_REDNODEBUS_REDNODERANGING_MAX_RESPONDER_COUNT=2)
+target_compile_definitions(app PUBLIC CONFIG_REDNODEBUS_REDNODERANGING_MAX_REPORTER_COUNT=2)
+target_compile_definitions(app PUBLIC CONFIG_NRF_REDNODEBUS_CRC_SIZE=10)
