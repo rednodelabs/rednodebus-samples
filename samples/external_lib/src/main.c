@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 // #include <mylib.h>
-// #include <net/rednodebus.h>
+#include <net/rednodebus.h>
 
 void main(void)
 {

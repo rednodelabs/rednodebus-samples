@@ -1,2 +1,0 @@
-/home/jaenrig/gr-labs-prjs/rednodelabs/rednodebus-samples/build/CMakeFiles/rebuild_cache.dir
-/home/jaenrig/gr-labs-prjs/rednodelabs/rednodebus-samples/build/CMakeFiles/edit_cache.dir
