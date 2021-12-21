@@ -59,15 +59,3 @@ overlay-rednodebus-ot.conf
 ```
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="overlay-rednodebus-rcp.conf overlay-rednodebus-vendor_hook.conf overlay-rednodelabs-usb.conf overlay-logging.conf"
 ```
-
-### ot-br-posix
-```
-./script/bootstrap
-BACKBONE_ROUTER=0 OTBR_OPTIONS='-DOT_SPINEL_RESET_CONNECTION=ON -DOT_THREAD_VERSION=1.1 -DOT_BACKBONE_ROUTER=OFF -DOT_DAEMON=ON -DOT_FULL_LOGS=ON' ./script/setup
-```
-```
-sudo ./build/otbr/src/agent/otbr-agent -I wpan0 -v 'spinel+hdlc+uart:///dev/serial/by-id/usb-RedNodeLabs_Thread_Co-Processor_0-if00?uart-baudrate=1000000' -d 6
-```
-```
-sudo ./build/otbr/third_party/openthread/repo/src/posix/ot-ctl log level 5
-```

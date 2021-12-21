@@ -24,7 +24,6 @@ LOG_MODULE_REGISTER(net_echo_server_sample, LOG_LEVEL_DBG);
 
 #include "common.h"
 #include "certificate.h"
-#include "net/rednodebus.h"
 
 #define APP_BANNER "Run echo server"
 

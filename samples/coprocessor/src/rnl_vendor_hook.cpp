@@ -21,14 +21,13 @@ namespace ot {
 namespace Ncp {
 
 static uint8_t mReceiveBuffer[300];
-// static uint8_t rnbStatus = 0;
 
 
 otError NcpBase::VendorCommandHandler(uint8_t aHeader, unsigned int aCommand)
 {
     otError error = OT_ERROR_NONE;
     unsigned int propKey = 0;
-    uint16_t rnbRequestLength = 0;
+    uint16_t len = 0;
     const uint8_t *rnbRequest = mReceiveBuffer;
 
     LOG_DBG("VendorCommandHandler");
@@ -36,19 +35,19 @@ otError NcpBase::VendorCommandHandler(uint8_t aHeader, unsigned int aCommand)
     switch (aCommand)
     {
     case SPINEL_CMD_VENDOR_RNL_RNB_SEND_REQUEST: {
-            LOG_DBG("Got SPINEL_CMD_VENDOR_RNL_RNB_SEND_REQUEST");
+            // LOG_DBG("Got SPINEL_CMD_VENDOR_RNL_RNB_SEND_REQUEST");
 
             SuccessOrExit(error = mDecoder.ReadUintPacked(propKey));
 
-            if (propKey == SPINEL_PROP_VENDOR_RNL_RNB_RAW_REQUEST)
+            if (propKey == SPINEL_PROP_VENDOR_RNL_RNB_REQUEST)
             {
-                // LOG_DBG("Got SPINEL_PROP_VENDOR_RNL_RNB_RAW_REQUEST");
+                SuccessOrExit(error = mDecoder.ReadDataWithLen(rnbRequest, len));
 
-                SuccessOrExit(error = mDecoder.ReadDataWithLen(rnbRequest, rnbRequestLength));
+                // LOG_DBG("Got SPINEL_PROP_VENDOR_RNL_RNB_REQUEST with length: %u", len);
 
-                if (rnbRequestLength)
+                if ((len > 0) && (len <= OT_RADIO_RNL_RNB_REQUEST_MAX_SIZE))
                 {
-                    error = otPlatRadioRnlRnbSendRequest(mInstance, rnbRequest, rnbRequestLength);
+                    error = otPlatRadioRnlRnbSendRequest(mInstance, (const otRadioRnlRnbRequest*) rnbRequest, len);
                 }
                 else
                 {

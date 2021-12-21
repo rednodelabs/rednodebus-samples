@@ -8,12 +8,11 @@ manifest:
     - name: nrf
       repo-path: sdk-nrf
       remote: ncs
-      # revision: v1.6.1
-      revision: b6deb62f2f2365a9785142fd0ab9f0a79ce1745c
+      revision: v1.7.1
       import:
         name-blocklist:
-          - openthread
           - zephyr
+          - openthread
     - name: zephyr
       remote: rednodelabs
       revision: rnl/rednodebus
@@ -57,9 +56,6 @@ manifest:
       remote: rednodelabs
       revision: rnl/rednodebus
       path: modules/lib/openthread
-    - name: ot-br-posix
-      remote: rednodelabs
-      revision: rnl/rednodebus
     - name: rednodebus
       remote: rednodelabs
       revision: feature/only-driver
