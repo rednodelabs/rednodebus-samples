@@ -1,21 +1,34 @@
 manifest:
+  version: "0.10"
+
+  # "remotes" is a list of locations where git repositories are cloned
+  # and fetched from.
   remotes:
     - name: rnl
       url-base: https://github.com/rednodelabs
     - name: ncs
       url-base: https://github.com/nrfconnect
+
+  # If not otherwise specified, the projects below should be obtained
+  # from the ncs remote.
+  defaults:
+    remote: rnl
+
+  group-filter: [+rnl-pub,-rnl-pri]
+
+  # "projects" is a list of git repositories which make up the NCS
+  # source code.
   projects:
     - name: nrf
       repo-path: sdk-nrf
       remote: ncs
-      revision: v1.7.1
+      revision: v1.8-branch
       import:
         name-blocklist:
           - zephyr
           - openthread
     - name: zephyr
-      remote: rnl
-      revision: main
+      revision: nrfconnect/v0.9.1
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -53,19 +66,15 @@ manifest:
           - tinycbor
           - tinycrypt
     - name: openthread
-      remote: rnl
-      revision: main
+      revision: zephyrproject-rtos/v0.9.1
       path: modules/lib/openthread
-    - name: rednodebus
-      remote: rnl
-      revision: main
-      groups:
-        - rnl-pri
     - name: rednodebus-release
-      remote: rnl
-      revision: main
+      revision: v0.9.1
       groups:
         - rnl-pub
-  group-filter: [+rnl-pub,-rnl-pri]
+    - name: rednodebus
+      revision: v0.9.1
+      groups:
+        - rnl-pri
   self:
     path: rednodebus-samples
