@@ -66,7 +66,7 @@ The sample supports the following development kits for testing the network statu
 
 .. table-from-rows:: /includes/sample_board_rows.txt
    :header: heading
-   :rows: nrf52840dk_nrf52840, nrf52833dk_nrf52833, nrf21540dk_nrf52840
+   :rows: nrf52840dk_nrf52840, nrf52840dongle_nrf52840, nrf52833dk_nrf52833, nrf21540dk_nrf52840
 
 To test the sample, you need at least one development kit.
 Additional development kits programmed with the Co-processor sample can be used for the :ref:`optional testing of network joining <ot_coprocessor_sample_testing_more_boards>`.
@@ -126,7 +126,7 @@ The following configuration files are available:
 * :file:`overlay-minimal_rcp.conf` - Enables a minimal configuration that reduces the code size and RAM usage.
   This file enables the RCP architecture with basic functionality and optimizes stacks and buffer sizes.
   For more information, see :ref:`app_memory`.
-* :file:`overlay-usb.conf` - Enables emulating a serial port over USB for Spinel communication with the host.
+* :file:`overlay-usb.conf` - Enables emulating a serial port over USB for Spinel communication with the host. Additionally, you need to set :makevar:`DTC_OVERLAY_FILE` to :file:`usb.overlay`.
 
 Building and running
 ********************
