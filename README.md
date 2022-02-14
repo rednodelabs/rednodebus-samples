@@ -118,6 +118,27 @@ west build -p -b insightsip_isp3010_dev samples/rednodebus_node -- -DOVERLAY_CON
 west flash
 ```
 
+## CoAP Client
+CoAP client sample code integrating RedNodeBus + OpenThread stack.
+
+> For more information regarding RedNodeBus API, see [ieee802154_radio.h](https://github.com/rednodelabs/zephyr/blob/main/include/net/ieee802154_radio.h)
+
+### decawave_dwm1001_dev board
+```
+west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+west flash
+```
+
+### insightsip_isp3010_dev board
+```
+west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+west flash
+```
+
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
 
 In order to run the RedNodeBus services in the edge platform, RedNodeLabs provides a
