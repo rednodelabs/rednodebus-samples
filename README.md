@@ -127,6 +127,12 @@ CoAP client sample code integrating RedNodeBus + OpenThread stack.
 ```
 west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
+In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
+In this way, we can assure the new OT configuration will be written correctly:
+```
+nrfjprog -e
+```
+Once the flash has been completely erased, the new firmware image can be flashed:
 ```
 west flash
 ```
