@@ -17,6 +17,7 @@
 LOG_MODULE_REGISTER(coap_client_utils, CONFIG_COAP_CLIENT_UTILS_LOG_LEVEL);
 
 #define RESPONSE_POLL_PERIOD 100
+#define HARDCODED_UNICAST_IP 1
 
 static uint32_t poll_period;
 
@@ -47,12 +48,23 @@ static struct sockaddr_in6 multicast_local_addr = {
 
 /* Variable for storing server address acquiring in provisioning handshake */
 static char unique_local_addr_str[INET6_ADDRSTRLEN];
+
+#if HARDCODED_UNICAST_IP
+static struct sockaddr_in6 unique_local_addr = {
+        .sin6_family = AF_INET6,
+        .sin6_port = htons(COAP_PORT),
+        .sin6_addr.s6_addr = { 0x20, 0x01, 0x0d, 0xb8, 0x00, 0x01, 0xff, 0xff,
+                0x00, 0x00, 0x00, 0x00, 0xc0, 0xa8, 0xb2, 0x85 },
+        .sin6_scope_id = 0U
+};
+#elif
 static struct sockaddr_in6 unique_local_addr = {
 	.sin6_family = AF_INET6,
 	.sin6_port = htons(COAP_PORT),
 	.sin6_addr.s6_addr = {0, },
 	.sin6_scope_id = 0U
 };
+#endif
 
 static bool is_mtd_in_med_mode(otInstance *instance)
 {
@@ -147,6 +159,15 @@ static void toggle_one_light(struct k_work *item)
 			"on the server side");
 		return;
 	}
+
+#if HARDCODED_UNICAST_IP
+	if (!inet_ntop(AF_INET6, &unique_local_addr.sin6_addr.s6_addr16[0],
+	               unique_local_addr_str,
+	               INET6_ADDRSTRLEN)) {
+	        LOG_ERR("Hardcoded IP is not valid IPv6 address: %d", errno);
+	        return;
+	}
+#endif
 
 	LOG_INF("Send 'light' request to: %s",
 		log_strdup(unique_local_addr_str));
