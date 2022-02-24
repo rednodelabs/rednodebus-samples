@@ -2,7 +2,6 @@
 
 This repository includes a list of samples integrating OpenThread + RedNodeBus stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
-
 ## Prerequisites
 The following tools are required:
 * Git
@@ -10,9 +9,8 @@ The following tools are required:
 * West [Zephyr’s meta-tool](https://docs.zephyrproject.org/latest/guides/west/index.html)
 * [J-Link utilities](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack)
 
-
 ## Init
-The project needs to be initialized as usual using **west**.
+The project needs to be initialized using **west**.
 ```
 mkdir zephyr-workspace
 cd zephyr-workspace
@@ -23,13 +21,11 @@ west init -m git@github.com:rednodelabs/rednodebus-samples.git
 ```
 west update
 ```
-
-Before building the samples, do not forget to set the environment variables:
+Before building the samples, it might be required to set the environment variables:
 ```
 export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
 export GNUARMEMB_TOOLCHAIN_PATH=<PATH>
 ```
-
 
 ## RNB OpenThread RCP Co-Processor
 Sample code for the RCP architecture supported by OpenThread.
@@ -42,6 +38,9 @@ This sample has been developed to be used with the following boards:
 #### With USB interface:
 ```
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
+```
+```
+west flash
 ```
 #### With UART interface:
 ```
@@ -86,7 +85,6 @@ SetHWFC Force
 You can find more details [here][j-link-ob].
 [j-link-ob]: https://wiki.segger.com/J-Link_OB_SAM3U_NordicSemi#Hardware_flow_control_support
 
-
 ### nrf52840dongle_nrf52840 board
 #### With USB interface:
 ```
@@ -96,11 +94,10 @@ west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FI
 west flash
 ```
 
-
 ## RNB Node
 Sample code for the simplest wireless node integrating RedNodeBus + OpenThread stack.
 
-> For more information regarding RedNodeBus API, see [ieee802154_radio.h](https://github.com/rednodelabs/zephyr/blob/main/include/net/ieee802154_radio.h)
+This sample has been developed to be used with the following boards:
 
 ### decawave_dwm1001_dev board
 ```
@@ -116,6 +113,60 @@ west build -p -b insightsip_isp3010_dev samples/rednodebus_node -- -DOVERLAY_CON
 ```
 ```
 west flash
+```
+
+## CoAP Client
+CoAP client sample code integrating RedNodeBus + OpenThread stack.
+
+This sample has been developed to be used with the following boards:
+
+### decawave_dwm1001_dev board
+```
+west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
+In this way, we can assure the new OT configuration will be written correctly:
+```
+nrfjprog -e
+```
+Once the flash has been completely erased, the new firmware image can be flashed:
+```
+west flash
+```
+
+### insightsip_isp3010_dev board
+```
+west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+west flash
+```
+
+To test the coap client, the coap_server.py script located in the script folder can be used.
+
+The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified 
+in the coap_clients_util.c file:
+```
+#if HARDCODED_UNICAST_IP
+static struct sockaddr_in6 unique_local_addr = {
+        .sin6_family = AF_INET6,
+        .sin6_port = htons(COAP_PORT),
+        .sin6_addr.s6_addr = { 0x20, 0x01, 0x0d, 0xb8, 0x00, 0x01, 0xff, 0xff,
+                0x00, 0x00, 0x00, 0x00, 0xc0, 0xa8, 0xb2, 0x85 },
+        .sin6_scope_id = 0U
+};
+```
+For example, if the server runs in the following local IP: 
+```
+192.168.178.133
+```
+First it needs to be converted to IPv6 using an [IPv4 to IPv6 converter](https://iplocation.io/ipv4-to-ipv6/), which gives:
+```
+c0a8:b285
+```
+Then, the prefix `2001:db8:1:ffff::` must be added, resulting in the following IP: 
+```
+2001:0db8:0001:ffff:0000:0000:c0a8:b285
 ```
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
@@ -138,7 +189,7 @@ docker pull rednodelabs/otbr:dev-0.9.1
 
 RNB OTBR requires the [RCP](###coprocessor) node in order to form a Thread network and offer RedNodeBus services.
 
-After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART (J-Link USB).
+After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB.
 Determine the serial port name for the RCP device by checking /dev:
 
 ```
@@ -202,7 +253,8 @@ otbr-agent[224]: Initialize OpenThread Border Router Agent: OK
 otbr-agent[224]: Border router agent started.
 ```
 
-RNB OTBR Docker is now running. Leave this terminal window open and running in the background. If you quit the process or close the window, RNB OTBR Docker will go down.
+RNB OTBR Docker is now running. Leave this terminal window open and running in the background. 
+If you quit the process or close the window, RNB OTBR Docker will go down.
 
 On the Raspberry Pi running RNB OTBR Docker, open a browser window and navigate to 127.0.0.1:3000.
 If RNB OTBR Docker is running correctly, the RNB OTBR Web GUI loads.

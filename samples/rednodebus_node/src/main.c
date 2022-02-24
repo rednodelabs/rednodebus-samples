@@ -9,7 +9,9 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(rednodebus_node, LOG_LEVEL_INF);
 
-#include "rnb.h"
+#if defined(CONFIG_REDNODEBUS)
+#include "rnb_utils.h"
+#endif
 
 
 void main(void)
@@ -19,5 +21,4 @@ void main(void)
 #if defined(CONFIG_REDNODEBUS)
     init_rnb();
 #endif
-
 }
