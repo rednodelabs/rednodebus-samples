@@ -184,7 +184,7 @@ to set up your Raspberry Pi and install Docker tool.
 ### Run RNB OTBR Docker
 Firstly, pull the RNB OTBR from RedNodeLabs docker repository:
 ```
-docker pull rednodelabs/otbr:dev-0.9.1
+docker pull rednodelabs/otbr:dev-0.9.2
 ```
 
 RNB OTBR requires the [RCP](###coprocessor) node in order to form a Thread network and offer RedNodeBus services.
