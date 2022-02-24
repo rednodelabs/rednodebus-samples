@@ -1,8 +1,6 @@
 import datetime
 import logging
-
 import asyncio
-
 import aiocoap.resource as resource
 import aiocoap
 
@@ -39,7 +37,6 @@ async def main():
     root.add_resource(['.well-known', 'core'],
             resource.WKCResource(root.get_resources_as_linkheader))
     root.add_resource(['light'], LightResource())
-
 
     await aiocoap.Context.create_server_context(root)
 
