@@ -1,0 +1,3 @@
+# RedNodeLabs Device Provisioning
+
+Our device provisioning process has been designed and implemented following the white paper of [AWS IoT Core](https://d1.awsstatic.com/whitepapers/device-manufacturing-provisioning.pdf). It is based on X.509 certificates and uses AWS IoT Core for provisioning the unique device certificates. The provisioning process is also used by RedNodeLabs to invoice the purchasing of the license.
