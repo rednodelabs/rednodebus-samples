@@ -2,6 +2,8 @@
 
 This repository includes a list of samples integrating OpenThread + RedNodeBus stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
+The C and CXX compiler identification used for these samples is GNU 10.3.1.
+
 ## Prerequisites
 The following tools are required:
 * Git
