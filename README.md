@@ -2,6 +2,8 @@
 
 This repository includes a list of samples integrating OpenThread + RedNodeBus stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
+The C and CXX compiler identification used for these samples is GNU 10.3.1.
+
 ## Prerequisites
 The following tools are required:
 * Git
@@ -177,14 +179,17 @@ for Raspberry Pi (models 3B+, 4).
 
 This container offers the OpenThread network services in combination with the RedNodeBus API based on MQTT.
 
+Please, consider that this service requires to purchase a license per edge device.
+For further details, contact RedNodeLabs.
+
 ### Raspberry Pi setup
-Please follow the instructions described in [OpenThread](https://openthread.io/guides/border-router/docker)
+Follow the instructions described in [OpenThread](https://openthread.io/guides/border-router/docker)
 to set up your Raspberry Pi and install Docker tool.
 
 ### Run RNB OTBR Docker
 Firstly, pull the RNB OTBR from RedNodeLabs docker repository:
 ```
-docker pull rednodelabs/otbr:dev-0.9.2
+docker pull rednodelabs/otbr:dev-0.9.3
 ```
 
 RNB OTBR requires the [RCP](###coprocessor) node in order to form a Thread network and offer RedNodeBus services.
@@ -197,10 +202,20 @@ $ ls /dev/tty*
 /dev/ttyACMO
 ```
 
-Start RNB OTBR Docker, referencing the RCP's serial port. For example, if the RCP is mounted at /dev/ttyACM0:
+Once you have requested your customer information and received your claim certificates (certs.tar), copy the files to the Raspberry Pi and unzip them in a folder:
 ```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.1
+mkdir /home/pi/rnl_certs
+tar -xvzf certs.tar -C /home/pi/rnl_certs
 ```
+This folder should be mounted always as `/app/config` volume when running the docker container.
+
+Start RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. 
+For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
+```
+docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.3
+```
+
+Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. Please consider to persist these files in a secure and safe place for each edge device. For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
 
 Upon success, you should have output similar to this:
 ```
