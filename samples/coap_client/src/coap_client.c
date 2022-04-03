@@ -70,14 +70,14 @@ static void on_ble_connect(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	dk_set_led_on(BLE_CONNECTION_LED);
+	//dk_set_led_on(BLE_CONNECTION_LED);
 }
 
 static void on_ble_disconnect(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	dk_set_led_off(BLE_CONNECTION_LED);
+	//dk_set_led_off(BLE_CONNECTION_LED);
 }
 
 #endif /* CONFIG_BT_NUS */
@@ -86,14 +86,14 @@ static void on_ot_connect(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	dk_set_led_on(OT_CONNECTION_LED);
+	//dk_set_led_on(OT_CONNECTION_LED);
 }
 
 static void on_ot_disconnect(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	dk_set_led_off(OT_CONNECTION_LED);
+	//dk_set_led_off(OT_CONNECTION_LED);
 }
 
 static void on_mtd_mode_toggle(uint32_t med)
@@ -107,7 +107,7 @@ static void on_mtd_mode_toggle(uint32_t med)
 		pm_device_state_set(cons, PM_DEVICE_STATE_SUSPENDED);
 	}
 #endif
-	dk_set_led(MTD_SED_LED, med);
+	//dk_set_led(MTD_SED_LED, med);
 }
 
 static void on_button_changed(uint32_t button_state, uint32_t has_changed)
@@ -161,11 +161,11 @@ void main(void)
 		return;
 	}
 
-	ret = dk_leds_init();
-	if (ret) {
-		LOG_ERR("Cannot init leds, (error: %d)", ret);
-		return;
-	}
+//	ret = dk_leds_init();
+//	if (ret) {
+//		LOG_ERR("Cannot init leds, (error: %d)", ret);
+//		return;
+//	}
 
 #if defined(CONFIG_REDNODEBUS)
     init_rnb();

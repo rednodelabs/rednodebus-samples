@@ -1,0 +1,12 @@
+sample:
+  name: Node RedNodeBus
+  description: Test Node RedNodeBus
+tests:
+  samples.rednodebus_node:
+      build_only: true
+      platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev
+      tags: ci_build
+      extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
+      integration_platforms:
+        - decawave_dwm1001_dev
+        - insightsip_isp3010_dev

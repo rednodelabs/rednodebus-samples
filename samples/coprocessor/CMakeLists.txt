@@ -24,4 +24,6 @@ endif()
 
 # NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c src/nrf_802154_radio_wrapper.c ${CMAKE_BINARY_DIR}/generated/rnb_coprocessor_version.c)
+
+target_include_directories(app PUBLIC ../../include)
 # NORDIC SDK APP END
