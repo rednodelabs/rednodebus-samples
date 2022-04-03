@@ -212,7 +212,7 @@ This folder should be mounted always as `/app/config` volume when running the do
 Start RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. 
 For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
 ```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.3
+docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.4
 ```
 
 Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. Please consider to persist these files in a secure and safe place for each edge device. For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
