@@ -160,8 +160,8 @@ int init_rnb(void)
 	ieee802154_config.rnb_user_event_handler = handle_radio_rnb_user_event;
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
-	rnb_user_config.sync_active_period_ms = 100;
-	rnb_user_config.sync_sleep_period_ms = 1000;
+	rnb_user_config.sync_active_period_ms = 2500;
+	rnb_user_config.sync_sleep_period_ms = 5000;
 	rnb_user_config.ranging_enabled = true;
 	rnb_user_config.ranging_period_ms = 404;
 	REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
