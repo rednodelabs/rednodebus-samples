@@ -163,7 +163,7 @@ int init_rnb(void)
 	rnb_user_config.sync_active_period_ms = 2500;
 	rnb_user_config.sync_sleep_period_ms = 5000;
 	rnb_user_config.ranging_enabled = true;
-	rnb_user_config.ranging_period_ms = 404;
+	rnb_user_config.ranging_period_ms = 0;
 	REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
 
 	REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_UNDEFINED);
