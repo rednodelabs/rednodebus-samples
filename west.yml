@@ -28,7 +28,7 @@ manifest:
           - zephyr
           - openthread
     - name: zephyr
-      revision: release/v0.9.5
+      revision: nrfconnect/v0.9.5
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -42,7 +42,6 @@ manifest:
         #
         # Please keep this list sorted alphabetically.
         name-allowlist:
-          - TraceRecorderSource
           - canopennode
           - civetweb
           - cmsis
@@ -65,6 +64,7 @@ manifest:
           - segger
           - tinycbor
           - tinycrypt
+          - TraceRecorderSource
     - name: openthread
       revision: zephyrproject-rtos/v0.9.1
       path: modules/lib/openthread
@@ -73,7 +73,7 @@ manifest:
       groups:
         - rnl-pub
     - name: rednodebus
-      revision: release/v0.9.5
+      revision: v0.9.5
       groups:
         - rnl-pri
   self:
