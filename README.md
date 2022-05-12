@@ -213,6 +213,8 @@ For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in
 docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.5
 ```
 
+> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.5, otherwise they will not be compatible!
+
 Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. 
 For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
 
