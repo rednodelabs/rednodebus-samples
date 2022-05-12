@@ -14,7 +14,7 @@ manifest:
   defaults:
     remote: rnl
 
-  group-filter: [-rnl-pub,+rnl-pri]
+  group-filter: [+rnl-pub,-rnl-pri]
 
   # "projects" is a list of git repositories which make up the NCS
   # source code.
