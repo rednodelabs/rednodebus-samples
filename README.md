@@ -34,6 +34,12 @@ To test the system, flash either the [RNB Node](#rnb-node) or the [CoAP Client](
 ## RNB Node
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack.
 
+In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
+In this way, we can assure the new OT configuration will be written correctly:
+```
+nrfjprog -e
+```
+
 This sample has been developed to be used with the following boards:
 
 ### decawave_dwm1001_dev board
@@ -55,18 +61,18 @@ west flash
 ## CoAP Client
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a CoAP client.
 
+In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
+In this way, we can assure the new OT configuration will be written correctly:
+```
+nrfjprog -e
+```
+
 This sample has been developed to be used with the following boards:
 
 ### decawave_dwm1001_dev board
 ```
 west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
-In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
-In this way, we can assure the new OT configuration will be written correctly:
-```
-nrfjprog -e
-```
-Once the flash has been completely erased, the new firmware image can be flashed:
 ```
 west flash
 ```
