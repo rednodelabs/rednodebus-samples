@@ -66,7 +66,7 @@ manifest:
           - tinycrypt
           - TraceRecorderSource
     - name: openthread
-      revision: zephyrproject-rtos/v0.9.1
+      revision: zephyrproject-rtos/v0.9.6
       path: modules/lib/openthread
     - name: rednodebus-release
       revision: v0.9.5
