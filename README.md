@@ -2,7 +2,7 @@
 
 # RedNodeBus Samples
 
-This repository includes a list of samples integrating OpenThread + RedNodeBus stack, based on [Zephyr OS](https://www.zephyrproject.org/).
+This repository includes a list of samples integrating OpenThread + RedNodeBus (RNB) stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
 ## Prerequisites
 The following tools are required:
@@ -31,14 +31,26 @@ west update
 To test the system, flash either the [RNB Node](#rnb-node) or the [CoAP Client](#coap-client) sample in the wireless nodes, and run the 
 [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
-## RNB Node
-Sample code for the wireless node integrating RedNodeBus + OpenThread stack.
-
-In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
-In this way, we can assure the new OT configuration will be written correctly:
+## RNB Lib Configuration
+In case a previous OpenThread (OT) configuration has been programmed in the board, we recommend erasing the flash completely.
+This way, we can assure that the new OT configuration will be written correctly:
 ```
 nrfjprog -e
 ```
+
+To configure the board to act as an anchor, modify the following line in the `src/rnb_utils.c` file of the sample you are using:
+```
+REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_ANCHOR);
+```
+Similarly, to configure the board to act as a tag:
+```
+REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_TAG);
+```
+
+To use different OT credentials, specify them in `samples/common/overlay-ot-defaults.conf`.
+
+## RNB Node
+Sample code for the wireless node integrating RedNodeBus + OpenThread stack.
 
 This sample has been developed to be used with the following boards:
 
@@ -60,12 +72,6 @@ west flash
 
 ## CoAP Client
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a CoAP client.
-
-In case a previous OT configuration has been programmed in the used board, we recommend to erase the flash completely.
-In this way, we can assure the new OT configuration will be written correctly:
-```
-nrfjprog -e
-```
 
 This sample has been developed to be used with the following boards:
 
