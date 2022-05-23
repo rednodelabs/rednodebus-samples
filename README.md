@@ -289,4 +289,4 @@ If the Docker is running correctly, the management Web GUI loads and the MQTT AP
 
 ### MQTT API Specification
 
-Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWfUvttx3k9Cst-vFau9MhEB8-xD40dfypIrbi8DLmcEJg). 
+Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EaqclvU_cf1JlDepAHbX3UIBl56gyPa9adO0YvR8t5cnOg?e=9fDvOd). 
