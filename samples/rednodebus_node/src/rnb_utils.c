@@ -14,10 +14,16 @@ LOG_MODULE_DECLARE(rednodebus_node, LOG_LEVEL_DBG);
 #include <stdio.h>
 
 #include <net/ieee802154_radio.h>
+#include <net/openthread.h>
 
 /* Convenience defines for RADIO */
 #define REDNODEBUS_API(dev) \
 		((const struct ieee802154_radio_api * const)(dev)->api)
+
+static bool is_rnb_configured;
+static struct rednodebus_user_config rnb_user_config;
+static struct rednodebus_user_ranging_config rnb_user_ranging_config;
+
 
 void print_rnb_state(const uint8_t state)
 {
@@ -122,7 +128,7 @@ void handle_radio_rnb_user_event(const struct device *dev,
 	switch (evt)
 	{
 	case REDNODEBUS_USER_EVENT_NEW_STATE:
-		LOG_DBG("RNB user event");
+		LOG_DBG("RNB user event new state");
 
 		print_rnb_state(rnb_user_event_params->state);
 
@@ -134,6 +140,19 @@ void handle_radio_rnb_user_event(const struct device *dev,
 			}
 
 			LOG_INF("RNB period ms %u", rnb_user_event_params->period_ms);
+		}
+		else if (rnb_user_event_params->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
+		{
+			if (!is_rnb_configured)
+			{
+				REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
+
+				REDNODEBUS_API(dev)->configure_rnb_ranging(dev, &rnb_user_ranging_config);
+
+				is_rnb_configured = true;
+
+				openthread_start(openthread_get_default_context());
+			}
 		}
 
 		if (rnb_user_event_params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED)
@@ -150,21 +169,21 @@ void handle_radio_rnb_user_event(const struct device *dev,
 
 int init_rnb(void)
 {
+	is_rnb_configured = false;
+	
 	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
 	struct ieee802154_config ieee802154_config;
-	struct rednodebus_user_config rnb_user_config;
-	const uint8_t network_id = 0;
 
 	ieee802154_config.rnb_user_event_handler = handle_radio_rnb_user_event;
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
-	rnb_user_config.sync_active_period_ms = 2500;
-	rnb_user_config.sync_sleep_period_ms = 5000;
-	rnb_user_config.ranging_enabled = true;
-	rnb_user_config.ranging_period_ms = 0;
-	REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
-
-	REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_UNDEFINED);
+	rnb_user_config.network_id = 0;
+	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
+	rnb_user_config.sync_active_period_ms = 2000;
+	rnb_user_config.sync_sleep_period_ms = 10000;
+	
+	rnb_user_ranging_config.ranging_enabled = true;
+	rnb_user_ranging_config.ranging_period_ms = 0;
 
 	return 0;
 }

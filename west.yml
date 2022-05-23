@@ -28,7 +28,7 @@ manifest:
           - zephyr
           - openthread
     - name: zephyr
-      revision: nrfconnect/v0.9.5
+      revision: nrfconnect/v0.9.6
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
