@@ -28,7 +28,7 @@ west update
 
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
-To test the system, flash either the [RNB Node](#rnb-node) or the [CoAP Client](#coap-client) sample in the wireless nodes, and run the 
+To test the system, flash either the [RNB Node](#rnb-node), the [CoAP Client](#coap-client) or the [Echo Client](#echo-client) sample in the wireless nodes, and run the 
 [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
 ## RNB Lib Configuration
@@ -92,7 +92,7 @@ west flash
 ```
 
 ### Testing the CoAP Client
-To test the CoAP client, the `coap_server.py` script located in the script folder can be used.
+To test the CoAP client, the `coap_server.py` file located in the `script` folder can be used.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified 
 in the coap_clients_util.c file:
@@ -119,8 +119,41 @@ Then, the prefix `2001:db8:1:ffff::` must be added, resulting in the following I
 2001:0db8:0001:ffff:0000:0000:ac11:0001
 ```
 
-Using the `coap_server.py` script in the same machine running the RNB OTBR docker, the CoAP messages generated when
-pressing a button in the board can be received.
+Using the `coap_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), 
+the CoAP messages generated when pressing a button in the board can be received.
+
+## Echo Client
+Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket.
+
+This sample has been developed to be used with the following boards:
+
+### decawave_dwm1001_dev board
+```
+west build -p -b decawave_dwm1001_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+west flash
+```
+
+### insightsip_isp3010_dev board
+```
+west build -p -b insightsip_isp3010_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+west flash
+```
+
+### Testing the Echo Client
+To test the echo client, the `udp_server.py` file located in the `script` folder can be used.
+
+Using the `udp_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), 
+the echo service can be tested. 
+
+Similarly as in the [CoAP Client](#coap-client), the IPv6-equivalent of the IPv4 of the machine running the `udp_server.py` 
+can be specified in the `prj.conf` file:
+```
+CONFIG_NET_CONFIG_PEER_IPV6_ADDR="2001:0db8:0001:ffff:0000:0000:ac11:0001" 
+```
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
 
