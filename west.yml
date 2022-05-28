@@ -73,7 +73,7 @@ manifest:
       groups:
         - rnl-pub
     - name: rednodebus
-      revision: v0.9.5
+      revision: release/v0.9.6
       groups:
         - rnl-pri
   self:

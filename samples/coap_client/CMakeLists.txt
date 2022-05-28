@@ -23,7 +23,8 @@ target_include_directories(app PUBLIC ../../include)
 
 target_include_directories(app PUBLIC ../coap_server/interface)
 
-target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE src/rnb_utils.c)
+target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC ../common/src)
+target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE ../common/src/rnb_utils.c)
 # APP END
 
 target_sources_ifdef(CONFIG_BT_NUS app PRIVATE src/ble_utils.c)

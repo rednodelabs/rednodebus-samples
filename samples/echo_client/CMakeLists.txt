@@ -32,7 +32,8 @@ target_include_directories(app PUBLIC ../../include)
 target_sources_ifdef(CONFIG_NET_UDP app PRIVATE src/udp.c)
 target_sources_ifdef(CONFIG_NET_TCP app PRIVATE src/tcp.c)
 target_sources_ifdef(CONFIG_NET_VLAN app PRIVATE src/vlan.c)
-target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE src/rnb_utils.c)
+target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC ../common/src)
+target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE ../common/src/rnb_utils.c)
 
 include(${ZEPHYR_BASE}/samples/net/common/common.cmake)
 
