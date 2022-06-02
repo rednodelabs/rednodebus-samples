@@ -1,4 +1,4 @@
-/* rnb.c - RedNodeBus specific code for node */
+/* rnb_utils.c - RedNodeBus utilities code for node */
 
 /*
  * Copyright (c) 2022 RedNodeLabs.
@@ -16,16 +16,50 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_DBG);
 #include <net/ieee802154_radio.h>
 #include <net/openthread.h>
 
-/* Convenience defines for RADIO */
-#define REDNODEBUS_API(dev) \
-		((const struct ieee802154_radio_api * const)(dev)->api)
+#include "rnb_utils.h"
 
+
+/* Convenience defines for RADIO */
+#define REDNODEBUS_API(dev)		((const struct ieee802154_radio_api * const)(dev)->api)
+
+struct rednodebus_utils_event
+{
+	void *fifo_reserved; /* 1st word reserved for use by fifo. */
+	const struct device *dev;
+	enum rednodebus_user_event event;
+	struct rednodebus_user_event_params params;
+	bool in_use;
+};
+
+
+/* RedNodeBus utils stack. */
+static K_KERNEL_STACK_MEMBER(rnb_utils_stack, REDNODEBUS_UTILS_STACK_SIZE);
+
+/* RedNodeBus utils thread control block. */
+static struct k_thread rnb_utils_thread;
+
+/* RedNodeBus utils event fifo queue. */
+static struct k_fifo rnb_utils_event_fifo;
+
+static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
 static bool is_rnb_configured;
 static struct rednodebus_user_config rnb_user_config;
 static struct rednodebus_user_ranging_config rnb_user_ranging_config;
 
+static void print_rnb_state(const uint8_t state);
+static void print_rnb_role(const uint8_t role);
+static void print_rnb_uwb_mode(const uint8_t uwb_mode);
+static void print_rnb_ranging_mode(const uint8_t ranging_mode);
+static void handle_rnb_user_event(const struct device *dev,
+								  enum rednodebus_user_event evt,
+								  void *event_params);
+static void process_rnb_utils_event(const struct device *dev,
+									const enum rednodebus_user_event event,
+									const struct rednodebus_user_event_params *params);
+static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
 
-void print_rnb_state(const uint8_t state)
+
+static void print_rnb_state(const uint8_t state)
 {
 	switch (state)
 	{
@@ -47,7 +81,7 @@ void print_rnb_state(const uint8_t state)
 	}
 }
 
-void print_rnb_role(const uint8_t role)
+static void print_rnb_role(const uint8_t role)
 {
 	switch (role)
 	{
@@ -66,7 +100,7 @@ void print_rnb_role(const uint8_t role)
 	}
 }
 
-void print_rnb_uwb_mode(const uint8_t uwb_mode)
+static void print_rnb_uwb_mode(const uint8_t uwb_mode)
 {
 	switch (uwb_mode)
 	{
@@ -91,7 +125,7 @@ void print_rnb_uwb_mode(const uint8_t uwb_mode)
 	}
 }
 
-void print_rnb_ranging_mode(const uint8_t ranging_mode)
+static void print_rnb_ranging_mode(const uint8_t ranging_mode)
 {
 	switch (ranging_mode)
 	{
@@ -116,32 +150,55 @@ void print_rnb_ranging_mode(const uint8_t ranging_mode)
 	}
 }
 
-void handle_radio_rnb_user_event(const struct device *dev,
-      enum rednodebus_user_event evt,
-      void *event_params)
+static void handle_rnb_user_event(const struct device *dev,
+		enum rednodebus_user_event evt,
+		void *event_params)
 {
-	ARG_UNUSED(dev);
+	for (uint8_t i = 0; i < ARRAY_SIZE(rnb_utils_events); i++)
+	{
+		if (rnb_utils_events[i].in_use)
+		{
+			continue;
+		}
 
-	const struct rednodebus_user_event_params *rnb_user_event_params =
-			(const struct rednodebus_user_event_params *) event_params;
+		rnb_utils_events[i].in_use = true;
 
-	switch (evt)
+		rnb_utils_events[i].dev = dev;
+		rnb_utils_events[i].event = evt;
+
+		memcpy(&rnb_utils_events[i].params,
+			   event_params,
+			   sizeof(struct rednodebus_user_event_params));
+
+		k_fifo_put(&rnb_utils_event_fifo, &rnb_utils_events[i]);
+
+		return;
+	}
+
+	LOG_ERR("Not enough events allocated for rnb user event %u", evt);
+}
+
+static void process_rnb_utils_event(const struct device *dev,
+		const enum rednodebus_user_event event,
+		const struct rednodebus_user_event_params *params)
+{
+	switch (event)
 	{
 	case REDNODEBUS_USER_EVENT_NEW_STATE:
 		LOG_DBG("RNB user event new state");
 
-		print_rnb_state(rnb_user_event_params->state);
+		print_rnb_state(params->state);
 
-		if (rnb_user_event_params->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
+		if (params->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
 		{
-			if (rnb_user_event_params->role != REDNODEBUS_USER_ROLE_UNDEFINED)
+			if (params->role != REDNODEBUS_USER_ROLE_UNDEFINED)
 			{
-				print_rnb_role(rnb_user_event_params->role);
+				print_rnb_role(params->role);
 			}
 
-			LOG_INF("RNB period ms %u", rnb_user_event_params->period_ms);
+			LOG_INF("RNB period ms %u", params->period_ms);
 		}
-		else if (rnb_user_event_params->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
+		else if (params->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
 		{
 			if (!is_rnb_configured)
 			{
@@ -155,10 +212,10 @@ void handle_radio_rnb_user_event(const struct device *dev,
 			}
 		}
 
-		if (rnb_user_event_params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED)
+		if (params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED)
 		{
-			print_rnb_uwb_mode(rnb_user_event_params->uwb_mode);
-			print_rnb_ranging_mode(rnb_user_event_params->ranging_mode);
+			print_rnb_uwb_mode(params->uwb_mode);
+			print_rnb_ranging_mode(params->ranging_mode);
 		}
 		break;
 	default:
@@ -167,23 +224,56 @@ void handle_radio_rnb_user_event(const struct device *dev,
 	}
 }
 
+static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
+{
+	ARG_UNUSED(arg1);
+	ARG_UNUSED(arg2);
+	ARG_UNUSED(arg3);
+
+	struct rednodebus_utils_event *rnb_utils_event;
+
+	while (1)
+	{
+		rnb_utils_event = k_fifo_get(&rnb_utils_event_fifo, K_FOREVER);
+
+		process_rnb_utils_event(rnb_utils_event->dev, rnb_utils_event->event, &rnb_utils_event->params);
+
+		rnb_utils_event->in_use = false;
+	}
+}
+
 int init_rnb(void)
 {
 	is_rnb_configured = false;
-	
-	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
-	struct ieee802154_config ieee802154_config;
-
-	ieee802154_config.rnb_user_event_handler = handle_radio_rnb_user_event;
-	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
 	rnb_user_config.network_id = 0;
 	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
 	rnb_user_config.sync_active_period_ms = 2000;
 	rnb_user_config.sync_sleep_period_ms = 10000;
-	
+
 	rnb_user_ranging_config.ranging_enabled = true;
 	rnb_user_ranging_config.ranging_period_ms = 0;
+
+	k_fifo_init(&rnb_utils_event_fifo);
+
+	k_thread_create(&rnb_utils_thread,
+					rnb_utils_stack,
+					REDNODEBUS_UTILS_STACK_SIZE,
+					rnb_utils_process_thread,
+					NULL,
+					NULL,
+					NULL,
+					K_PRIO_PREEMPT(REDNODEBUS_UTILS_THREAD_PRIORITY),
+					0,
+					K_NO_WAIT);
+
+	k_thread_name_set(&rnb_utils_thread, "rnb_utils_thread");
+
+	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
+	struct ieee802154_config ieee802154_config;
+
+	ieee802154_config.rnb_user_event_handler = handle_rnb_user_event;
+	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
 	return 0;
 }
