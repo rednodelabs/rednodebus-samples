@@ -282,7 +282,7 @@ void coap_client_utils_init(ot_connection_cb_t on_connect,
 	k_work_init(&provisioning_work, send_provisioning_request);
 
 	openthread_set_state_changed_cb(on_thread_state_changed);
-	openthread_start(openthread_get_default_context());
+	// openthread_start(openthread_get_default_context()); // Managed by RedNodeBus
 
 	if (IS_ENABLED(CONFIG_OPENTHREAD_MTD_SED)) {
 		k_work_init(&toggle_MTD_SED_work,
