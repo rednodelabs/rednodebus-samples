@@ -150,9 +150,9 @@ Using the `udp_server.py` script in the same machine running the RNB OTBR docker
 the echo service can be tested. 
 
 Similarly as in the [CoAP Client](#coap-client), the IPv6-equivalent of the IPv4 of the machine running the `udp_server.py` 
-can be specified in the `prj.conf` file:
+can be specified in the `common.h` file:
 ```
-CONFIG_NET_CONFIG_PEER_IPV6_ADDR="2001:0db8:0001:ffff:0000:0000:ac11:0001" 
+#define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 ```
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)

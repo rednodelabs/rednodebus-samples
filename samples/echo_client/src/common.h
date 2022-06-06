@@ -58,7 +58,7 @@ struct configs {
 #endif
 
 #if !defined(CONFIG_NET_CONFIG_PEER_IPV6_ADDR)
-#define CONFIG_NET_CONFIG_PEER_IPV6_ADDR ""
+#define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 #endif
 
 extern const char lorem_ipsum[];
