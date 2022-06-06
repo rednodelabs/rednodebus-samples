@@ -42,9 +42,10 @@ static struct k_thread rnb_utils_thread;
 static struct k_fifo rnb_utils_event_fifo;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
-static bool is_rnb_configured;
+static bool rnb_configured;
 static struct rednodebus_user_config rnb_user_config;
 static struct rednodebus_user_ranging_config rnb_user_ranging_config;
+static bool rnb_connected;
 
 static void print_rnb_state(const uint8_t state);
 static void print_rnb_role(const uint8_t role);
@@ -64,6 +65,8 @@ static void print_rnb_state(const uint8_t state)
 	switch (state)
 	{
 	case REDNODEBUS_USER_BUS_STATE_CONNECTED:
+		rnb_connected = true;
+
 		LOG_INF("RNB state: CONNECTED");
 		break;
 	case REDNODEBUS_USER_BUS_STATE_SYNCHRONIZED:
@@ -73,6 +76,8 @@ static void print_rnb_state(const uint8_t state)
 		LOG_INF("RNB state: UNSYNCHRONIZED");
 		break;
 	case REDNODEBUS_USER_BUS_STATE_STOPPED:
+		rnb_connected = false;
+
 		LOG_INF("RNB state: STOPPED");
 		break;
 	default:
@@ -200,19 +205,20 @@ static void process_rnb_utils_event(const struct device *dev,
 		}
 		else if (params->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
 		{
-			if (!is_rnb_configured)
+			if (!rnb_configured)
 			{
 				REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
 
 				REDNODEBUS_API(dev)->configure_rnb_ranging(dev, &rnb_user_ranging_config);
 
-				is_rnb_configured = true;
+				rnb_configured = true;
 
 				openthread_start(openthread_get_default_context());
 			}
 		}
 
-		if (params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED)
+		if ((params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
+			(params->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
 		{
 			print_rnb_uwb_mode(params->uwb_mode);
 			print_rnb_ranging_mode(params->ranging_mode);
@@ -244,7 +250,8 @@ static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
 
 int init_rnb(void)
 {
-	is_rnb_configured = false;
+	rnb_configured = false;
+	rnb_connected = false;
 
 	rnb_user_config.network_id = 0;
 	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
@@ -276,4 +283,9 @@ int init_rnb(void)
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
 	return 0;
+}
+
+bool is_rnb_connected(void)
+{
+	return rnb_connected;
 }

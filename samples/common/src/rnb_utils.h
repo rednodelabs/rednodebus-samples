@@ -20,6 +20,7 @@
 #define REDNODEBUS_UTILS_THREAD_PRIORITY    3
 
 int init_rnb(void);
+bool is_rnb_connected(void);
 
 #endif
 
