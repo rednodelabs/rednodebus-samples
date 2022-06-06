@@ -69,11 +69,11 @@ manifest:
       revision: zephyrproject-rtos/v0.9.6
       path: modules/lib/openthread
     - name: rednodebus-release
-      revision: v0.9.5
+      revision: v0.9.6
       groups:
         - rnl-pub
     - name: rednodebus
-      revision: release/v0.9.6
+      revision: v0.9.6
       groups:
         - rnl-pri
   self:
