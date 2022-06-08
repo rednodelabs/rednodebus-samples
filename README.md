@@ -38,13 +38,13 @@ This way, we can assure that the new OT configuration will be written correctly:
 nrfjprog -e
 ```
 
-To configure the board to act as an anchor, modify the following line in the `src/rnb_utils.c` file of the sample you are using:
+To configure the board to act as an anchor, modify the following line in the `rnb_utils.c` file of the sample you are using:
 ```
-REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_ANCHOR);
+rnb_user_config.role = REDNODEBUS_USER_ROLE_ANCHOR;
 ```
 Similarly, to configure the board to act as a tag:
 ```
-REDNODEBUS_API(dev)->start_rnb(dev, network_id, REDNODEBUS_USER_ROLE_TAG);
+rnb_user_config.role = REDNODEBUS_USER_ROLE_TAG;
 ```
 
 To use different OT credentials, specify them in `samples/common/overlay-ot-defaults.conf`.
