@@ -49,7 +49,8 @@ rnb_user_config.role = REDNODEBUS_USER_ROLE_TAG;
 
 To use different OT credentials, specify them in `samples/common/overlay-ot-defaults.conf`.
 
-To enable the ranging diagnostics add the overlay `samples/common/overlay-rednodebus-ranging-diagnostic.conf` when compiling the samples.
+To enable RedNodeBus ranging diagnostic, add the overlay to `OVERLAY_CONFIG` when building the sample projects as following: 
+`../common/overlay-rednodebus-ranging-diagnostic.conf`. For building the radio coprocessor (RCP) this is not required.
 
 ## RNB Node
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack.
