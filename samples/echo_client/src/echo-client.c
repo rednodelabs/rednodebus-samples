@@ -57,15 +57,15 @@ struct k_mem_domain app_domain;
  * 2 paragraphs, 179 words, 1160 bytes of Lorem Ipsum
  */
 const char lorem_ipsum[] =
-	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ";
-	/*"sodales lorem lorem, sed congue enim vehicula a. Sed finibus diam sed "
+	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque "
+	"sodales lorem lorem, sed congue enim vehicula a. Sed finibus diam sed "
 	"odio ultrices pharetra. Nullam dictum arcu ultricies turpis congue, "
 	"vel venenatis turpis venenatis. Nam tempus arcu eros, ac congue libero "
 	"tristique congue. Proin velit lectus, euismod sit amet quam in, "
 	"maximus condimentum urna. Cras vel erat luctus, mattis orci ut, varius "
 	"urna. Nam eu lobortis velit."
-	"\n"
-	"Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
+	"\n";
+	/*"Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
 	"fringilla, enim nec consectetur mollis, lorem orci interdum nisi, "
 	"vitae suscipit nisi mauris eu mi. Proin diam enim, mollis ac rhoncus "
 	"vitae, placerat et eros. Suspendisse convallis, ipsum nec rhoncus "
