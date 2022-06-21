@@ -62,6 +62,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -70,6 +71,7 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -83,6 +85,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -91,6 +94,7 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -135,6 +139,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -143,6 +148,7 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -189,6 +195,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 #### With UART interface:
@@ -196,6 +203,7 @@ west flash
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 ##### Mass Storage Device known issue (only for UART interface)
@@ -238,6 +246,7 @@ SetHWFC Force
 west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
