@@ -265,7 +265,11 @@ int init_rnb(void)
 	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
 	rnb_user_runtime_config.tx_power = 0x04; // +4 dBm
 #endif
+#if defined(CONFIG_REDNODERANGING)
 	rnb_user_runtime_config.ranging_enabled = true;
+#else
+	rnb_user_runtime_config.ranging_enabled = false;
+#endif
 	rnb_user_runtime_config.ranging_period_ms = 0;
 
 	k_fifo_init(&rnb_utils_event_fifo);
