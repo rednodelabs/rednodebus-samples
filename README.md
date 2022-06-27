@@ -75,6 +75,15 @@ nrfjprog -e
 west flash
 ```
 
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840s samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
 ### nrf52840dongle_nrf52840 board
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
@@ -97,6 +106,15 @@ west flash
 ### insightsip_isp3010_dev board
 ```
 west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
 nrfjprog -e
@@ -156,6 +174,15 @@ west flash
 ### insightsip_isp3010_dev board
 ```
 west build -p -b insightsip_isp3010_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
 nrfjprog -e
