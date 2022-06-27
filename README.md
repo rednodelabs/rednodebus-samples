@@ -79,10 +79,6 @@ west flash
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
-```
-nrfjprog -e
-west flash
-```
 
 ## CoAP Client
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a CoAP client.
@@ -110,10 +106,6 @@ west flash
 ### nrf52840dongle_nrf52840 board
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
 ```
 
 ### Testing the CoAP Client
@@ -173,10 +165,6 @@ west flash
 ### nrf52840dongle_nrf52840 board
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
 ```
 
 ### Testing the Echo Client
@@ -271,10 +259,6 @@ SetHWFC Force
 #### With USB interface:
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
-```
-```
-nrfjprog -e
-west flash
 ```
 
 ### Running the RNB OTBR Docker
