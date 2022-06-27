@@ -77,7 +77,7 @@ west flash
 
 ### nrf52840dk_nrf52840 board
 ```
-west build -p -b nrf52840dk_nrf52840s samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b nrf52840dk_nrf52840s samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
 nrfjprog -e
@@ -114,7 +114,7 @@ west flash
 
 ### nrf52840dk_nrf52840 board
 ```
-west build -p -b nrf52840dk_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b nrf52840dk_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
 nrfjprog -e
