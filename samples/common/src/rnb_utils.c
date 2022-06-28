@@ -44,7 +44,7 @@ static struct k_fifo rnb_utils_event_fifo;
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
 static bool rnb_configured;
 static struct rednodebus_user_config rnb_user_config;
-static struct rednodebus_user_ranging_config rnb_user_ranging_config;
+static struct rednodebus_user_runtime_config rnb_user_runtime_config;
 static bool rnb_connected;
 
 static void print_rnb_state(const uint8_t state);
@@ -207,9 +207,9 @@ static void process_rnb_utils_event(const struct device *dev,
 		{
 			if (!rnb_configured)
 			{
-				REDNODEBUS_API(dev)->configure_rnb(dev, &rnb_user_config);
+				REDNODEBUS_API(dev)->init_rnb_config(dev, &rnb_user_config);
 
-				REDNODEBUS_API(dev)->configure_rnb_ranging(dev, &rnb_user_ranging_config);
+				REDNODEBUS_API(dev)->update_rnb_runtime_config(dev, &rnb_user_runtime_config);
 
 				rnb_configured = true;
 
@@ -258,8 +258,19 @@ int init_rnb(void)
 	rnb_user_config.sync_active_period_ms = 2000;
 	rnb_user_config.sync_sleep_period_ms = 10000;
 
-	rnb_user_ranging_config.ranging_enabled = true;
-	rnb_user_ranging_config.ranging_period_ms = 0;
+#if defined(CONFIG_SOC_NRF52840)
+	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
+	rnb_user_runtime_config.tx_power = 0x08; // +8 dBm
+#else
+	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
+	rnb_user_runtime_config.tx_power = 0x04; // +4 dBm
+#endif
+#if defined(CONFIG_REDNODERANGING)
+	rnb_user_runtime_config.ranging_enabled = true;
+#else
+	rnb_user_runtime_config.ranging_enabled = false;
+#endif
+	rnb_user_runtime_config.ranging_period_ms = 0;
 
 	k_fifo_init(&rnb_utils_event_fifo);
 

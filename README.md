@@ -62,6 +62,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -70,7 +71,22 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
+```
+
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840s samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
+### nrf52840dongle_nrf52840 board
+```
+west build -p -b nrf52840dongle_nrf52840 samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ## CoAP Client
@@ -83,6 +99,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -91,7 +108,22 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
+```
+
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
+### nrf52840dongle_nrf52840 board
+```
+west build -p -b nrf52840dongle_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### Testing the CoAP Client
@@ -135,6 +167,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b decawave_dwm1001_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 
@@ -143,7 +176,22 @@ west flash
 west build -p -b insightsip_isp3010_dev samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
+```
+
+### nrf52840dk_nrf52840 board
+```
+west build -p -b nrf52840dk_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+```
+```
+nrfjprog -e
+west flash
+```
+
+### nrf52840dongle_nrf52840 board
+```
+west build -p -b nrf52840dongle_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### Testing the Echo Client
@@ -175,10 +223,10 @@ to set up your Raspberry Pi and install Docker tool.
 ### Setting-Up the RNB OTBR Docker
 Firstly, pull the RNB OTBR from RedNodeLabs docker repository:
 ```
-docker pull rednodelabs/otbr:dev-0.9.7
+docker pull rednodelabs/otbr:dev-0.9.8
 ```
 
-> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.7, otherwise they will not be compatible!
+> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.8, otherwise they will not be compatible!
 
 RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. 
 This sample has been developed to be used with the following boards:
@@ -189,6 +237,7 @@ This sample has been developed to be used with the following boards:
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 #### With UART interface:
@@ -196,6 +245,7 @@ west flash
 west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf"
 ```
 ```
+nrfjprog -e
 west flash
 ```
 ##### Mass Storage Device known issue (only for UART interface)
@@ -237,9 +287,6 @@ SetHWFC Force
 ```
 west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
 ```
-```
-west flash
-```
 
 ### Running the RNB OTBR Docker
 After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB.
@@ -260,7 +307,7 @@ This folder should be mounted always as `/app/config` volume when running the do
 Start RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. 
 For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
 ```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.7
+docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.8
 ```
 
 Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. 

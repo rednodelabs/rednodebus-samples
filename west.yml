@@ -28,7 +28,7 @@ manifest:
           - zephyr
           - openthread
     - name: zephyr
-      revision: nrfconnect/v0.9.6
+      revision: nrfconnect/v0.9.8
       import:
         # In addition to the zephyr repository itself, NCS also
         # imports the contents of zephyr/west.yml at the above
@@ -69,11 +69,11 @@ manifest:
       revision: zephyrproject-rtos/v0.9.6
       path: modules/lib/openthread
     - name: rednodebus-release
-      revision: v0.9.7
+      revision: v0.9.8
       groups:
         - rnl-pub
     - name: rednodebus
-      revision: v0.9.7
+      revision: v0.9.8
       groups:
         - rnl-pri
   self:
