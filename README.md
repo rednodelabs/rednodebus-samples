@@ -5,11 +5,8 @@
 This repository includes a list of samples integrating OpenThread + RedNodeBus (RNB) stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
 ## Prerequisites
-The following tools are required:
-* Git
-* Python 3
-* West [Zephyr’s meta-tool](https://docs.zephyrproject.org/latest/guides/west/index.html)
-* [J-Link utilities](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack)
+Follow the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your development environment
+with all the required tools and dependencies. 
 
 The C and CXX compiler identification used for these samples is GNU 10.3.1.
 
