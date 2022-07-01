@@ -7,11 +7,6 @@
 	current-speed = <921600>;
 	status = "okay";
 	hw-flow-control;
-	tx-pin = <45>;
-	rx-pin = <46>;
-	rx-pull-up;
-	rts-pin = <47>;
-	cts-pin = <44>;
 };
 
 &uart1 {
