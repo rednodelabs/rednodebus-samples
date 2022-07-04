@@ -5,11 +5,8 @@
 This repository includes a list of samples integrating OpenThread + RedNodeBus (RNB) stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
 ## Prerequisites
-The following tools are required:
-* Git
-* Python 3
-* West [Zephyr’s meta-tool](https://docs.zephyrproject.org/latest/guides/west/index.html)
-* [J-Link utilities](https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack)
+Follow the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your development environment
+with all the required tools and dependencies. 
 
 The C and CXX compiler identification used for these samples is GNU 10.3.1.
 
@@ -77,7 +74,7 @@ west flash
 
 ### nrf52840dk_nrf52840 board
 ```
-west build -p -b nrf52840dk_nrf52840s samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b nrf52840dk_nrf52840 samples/rednodebus_node -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 ```
 nrfjprog -e
@@ -223,10 +220,10 @@ to set up your Raspberry Pi and install Docker tool.
 ### Setting-Up the RNB OTBR Docker
 Firstly, pull the RNB OTBR from RedNodeLabs docker repository:
 ```
-docker pull rednodelabs/otbr:dev-0.9.8
+docker pull rednodelabs/otbr:dev-0.9.9
 ```
 
-> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.8, otherwise they will not be compatible!
+> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.9, otherwise they will not be compatible!
 
 RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. 
 This sample has been developed to be used with the following boards:
@@ -307,7 +304,7 @@ This folder should be mounted always as `/app/config` volume when running the do
 Start RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. 
 For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
 ```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.8
+docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.9
 ```
 
 Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. 
@@ -372,4 +369,4 @@ If the Docker is running correctly, the management Web GUI loads and the MQTT AP
 
 ### MQTT API Specification
 
-Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/Eau4K5sZcTVBv6vB9MY4OO0BhtaAsPStyznbmRZ81zcBTQ?e=chDzPi). 
+Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EVf2fKHgjvRIsU2f5803xJgBDDGQEcAGlEi_ULjdmZLaig?e=2002y6).
