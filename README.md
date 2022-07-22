@@ -245,7 +245,9 @@ west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="ov
 nrfjprog -e
 west flash
 ```
-##### Mass Storage Device known issue (only for UART interface)
+> By default the baudrate is set to 921600. When using the on-board debugger as interface, it is recommended to set it to 1000000 in `nrf52840dk_nrf52840.overlay`, and specifying the change when running the docker by adding the 
+following parameter to the `docker run` command: `--radio-url “spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=1000000”`.
+##### Mass Storage Device known issue (only for UART interface through the on-board debugger)
 Depending on your version, due to a known issue in SEGGER's J-Link firmware, you might experience data corruption or data drops if you use the serial port. You can avoid this issue by disabling the Mass Storage Device.
 
 ###### Disabling the Mass Storage Device on Linux
@@ -260,7 +262,7 @@ MSDDisable
 ```
 4. Power cycle the DK.
 
-##### Hardware Flow Control detection (only for UART interface)
+##### Hardware Flow Control detection (only for UART interface through the on-board debugger)
 By default, SEGGER J-Link automatically detects at runtime whether the target is using Hardware Flow Control (HWFC).
 
 The automatic HWFC detection is done by driving P0.07 (Clear to Send - CTS) from the interface MCU and evaluating the state of P0.05 (Request to Send - RTS) when the first data is sent or received. If the state of P0.05 (RTS) is high, it is assumed that HWFC is not used.
@@ -369,4 +371,4 @@ If the Docker is running correctly, the management Web GUI loads and the MQTT AP
 
 ### MQTT API Specification
 
-Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EVf2fKHgjvRIsU2f5803xJgBDDGQEcAGlEi_ULjdmZLaig?e=2002y6).
+Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EcguiJWVoB1EotfQfFYa1wYBNxxwXdcI_h5OZ4KZ68xFzQ?e=qbODlg).
