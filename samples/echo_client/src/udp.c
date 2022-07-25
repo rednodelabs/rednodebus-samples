@@ -23,7 +23,7 @@ LOG_MODULE_DECLARE(net_echo_client_sample, LOG_LEVEL_DBG);
 
 #define RECV_BUF_SIZE 1280
 #define UDP_SLEEP K_MSEC(150)
-#define UDP_WAIT K_SECONDS(10)
+#define UDP_WAIT K_SECONDS(60)
 
 static APP_BMEM char recv_buf[RECV_BUF_SIZE];
 

@@ -64,8 +64,8 @@ const char lorem_ipsum[] =
 	"tristique congue. Proin velit lectus, euismod sit amet quam in, "
 	"maximus condimentum urna. Cras vel erat luctus, mattis orci ut, varius "
 	"urna. Nam eu lobortis velit."
-	"\n";
-	/*"Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
+	"\n"
+	"Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
 	"fringilla, enim nec consectetur mollis, lorem orci interdum nisi, "
 	"vitae suscipit nisi mauris eu mi. Proin diam enim, mollis ac rhoncus "
 	"vitae, placerat et eros. Suspendisse convallis, ipsum nec rhoncus "
@@ -76,7 +76,7 @@ const char lorem_ipsum[] =
 	"mauris non ullamcorper viverra, lorem nulla vulputate diam, et congue "
 	"dui velit non erat. Duis interdum leo et ipsum tempor consequat. In "
 	"faucibus enim quis purus vulputate nullam."
-	"\n";*/
+	"\n";
 
 const int ipsum_len = sizeof(lorem_ipsum) - 1;
 
