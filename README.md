@@ -5,10 +5,15 @@
 This repository includes a list of samples integrating OpenThread + RedNodeBus (RNB) stack, based on [Zephyr OS](https://www.zephyrproject.org/).
 
 ## Prerequisites
-Follow the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your development environment
-with all the required tools and dependencies. 
+Read the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your environment with the required tools and dependencies.
 
-The C and CXX compiler identification used for these samples is GNU 10.3.1.
+The [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain) version used for these samples is 10.3.1.
+
+Remember to set the required environment variables:
+```
+export GNUARMEMB_TOOLCHAIN_PATH=/PathTo/ArmGNUToolchain/
+export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+```
 
 ## Init
 The project needs to be initialized using **west**.
@@ -25,12 +30,10 @@ west update
 
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
-To test the system, flash either the [RNB Node](#rnb-node), the [CoAP Client](#coap-client) or the [Echo Client](#echo-client) sample in the wireless nodes, and run the 
-[RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+To test the system, flash either the [RNB Node](#rnb-node), the [CoAP Client](#coap-client) or the [Echo Client](#echo-client) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
 ## RNB Lib Configuration
-In case a previous OpenThread (OT) configuration has been programmed in the board, we recommend erasing the flash completely.
-This way, we can assure that the new OT configuration will be written correctly:
+In case a previous OpenThread (OT) configuration has been programmed in the board, we recommend erasing the flash completely. This way, we can assure that the new OT configuration will be written correctly:
 ```
 nrfjprog -e
 ```
@@ -46,8 +49,8 @@ rnb_user_config.role = REDNODEBUS_USER_ROLE_TAG;
 
 To use different OT credentials, specify them in `samples/common/overlay-ot-defaults.conf`.
 
-To enable RedNodeBus ranging diagnostic, add the overlay to `OVERLAY_CONFIG` when building the sample projects as following: 
-`../common/overlay-rednodebus-ranging-diagnostic.conf`. For building the radio coprocessor (RCP) this is not required.
+To enable the RedNodeBus ranging diagnostic, add the overlay to `OVERLAY_CONFIG` when building the sample projects as following:
+`../common/overlay-rednodebus-ranging-diagnostic.conf`. Note that this is mainly for debugging purposes, since the power consumption will increase.
 
 ## RNB Node
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack.
@@ -126,8 +129,7 @@ west build -p -b nrf52840dongle_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG
 ### Testing the CoAP Client
 To test the CoAP client, the `coap_server.py` file located in the `script` folder can be used.
 
-The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified 
-in the coap_clients_util.c file:
+The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified in the coap_clients_util.c file:
 ```
 #if HARDCODED_UNICAST_IP
 static struct sockaddr_in6 unique_local_addr = {
@@ -138,7 +140,7 @@ static struct sockaddr_in6 unique_local_addr = {
         .sin6_scope_id = 0U
 };
 ```
-For example, if the server runs in the following local IP: 
+For example, if the server runs in the following local IP:
 ```
 172.17.0.1
 ```
@@ -146,13 +148,12 @@ First, we need to take the last 32 bits from the conversion to IPv6 using an [IP
 ```
 ac11:0001
 ```
-Then, the prefix `2001:db8:1:ffff::` must be added, resulting in the following IP: 
+Then, the prefix `2001:db8:1:ffff::` must be added, resulting in the following IP:
 ```
 2001:0db8:0001:ffff:0000:0000:ac11:0001
 ```
 
-Using the `coap_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), 
-the CoAP messages generated when pressing a button in the board can be received.
+Using the `coap_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the CoAP messages generated when pressing a button in the board can be received.
 
 ## Echo Client
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket.
@@ -194,39 +195,39 @@ west build -p -b nrf52840dongle_nrf52840 samples/echo_client -- -DOVERLAY_CONFIG
 ### Testing the Echo Client
 To test the echo client, the `udp_server.py` file located in the `script` folder can be used.
 
-Using the `udp_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), 
-the echo service can be tested. 
+Using the `udp_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the echo service can be tested.
 
-Similarly as in the [CoAP Client](#coap-client), the IPv6-equivalent of the IPv4 of the machine running the `udp_server.py` 
-can be specified in the `common.h` file:
+Similarly as in the [CoAP Client](#coap-client), the IPv6-equivalent of the IPv4 of the machine running the `udp_server.py` can be specified in the `common.h` file:
 ```
 #define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 ```
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
 
-To run the RedNodeBus services in the edge platform, RedNodeLabs provides a
-docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router)
-for Raspberry Pi (models 3B+, 4).
+To run the RedNodeBus services in the edge platform, RedNodeLabs provides a docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router) for Raspberry Pi (models 3B+, 4).
+
+> A 64-bit OS is required, such as [Raspberry Pi OS (64-bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit)
 
 This container offers the OpenThread network services in combination with the RedNodeBus API based on MQTT.
 
-Please, consider that this service requires getting a license. For further details, contact RedNodeLabs.
+Please, consider that this service requires getting a license. For further details, contact [RedNodeLabs](mailto:info@rednodelabs.com).
 
 ### Setting-Up the Raspberry Pi
-Follow the instructions described in [OpenThread](https://openthread.io/guides/border-router/docker#raspberry_pi_setup)
-to set up your Raspberry Pi and install Docker tool.
+Follow the instructions described in [OpenThread](https://openthread.io/guides/border-router/docker#raspberry_pi_setup) to set up your Raspberry Pi and install Docker tool.
 
 ### Setting-Up the RNB OTBR Docker
-Firstly, pull the RNB OTBR from RedNodeLabs docker repository:
+Firstly, pull the RNB OTBR from [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr). Please specify the desired TAG:
 ```
-docker pull rednodelabs/otbr:dev-0.9.10
+docker pull rednodelabs/rnb-otbr:TAG
 ```
 
-> The version of the RNB OTBR Docker must match the version of the samples flashed in the nodes, i.e. v0.9.10, otherwise they will not be compatible!
+> TAG has the format `vX.X.X`, check the tag of the current release in Github.
 
-RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. 
-This sample has been developed to be used with the following boards:
+> The TAG of the RNB OTBR Docker must match the version of the samples flashed in the nodes, otherwise there might be incompatibilities!
+
+RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. This sample has been developed to be used with the multiple boards. You can directly download the binaries from [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for some boards and default configurations.
+
+If other configurations are required, e.g. different UART pins or baudrates, follow the build instructions below:
 
 ### nrf52840dk_nrf52840 board
 #### With USB interface:
@@ -245,8 +246,9 @@ west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="ov
 nrfjprog -e
 west flash
 ```
-> By default the baudrate is set to 921600. When using the on-board debugger as interface, it is recommended to set it to 1000000 in `nrf52840dk_nrf52840.overlay`, and specifying the change when running the docker by adding the 
+> By default the baudrate is set to 921600 in the RNB OTBR Docker. When using the on-board debugger as interface, it is recommended to set it to 1000000 in `nrf52840dk_nrf52840.overlay`, and specifying the change when running the docker by adding the
 following parameter to the `docker run` command: `--radio-url “spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=1000000”`.
+
 ##### Mass Storage Device known issue (only for UART interface through the on-board debugger)
 Depending on your version, due to a known issue in SEGGER's J-Link firmware, you might experience data corruption or data drops if you use the serial port. You can avoid this issue by disabling the Mass Storage Device.
 
@@ -288,8 +290,7 @@ west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FI
 ```
 
 ### Running the RNB OTBR Docker
-After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB.
-Determine the serial port name for the RCP device by checking /dev:
+After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB. Determine the serial port name for the RCP device by checking /dev:
 
 ```
 $ ls /dev/tty*
@@ -303,72 +304,68 @@ tar -xvzf certs.tar -C /home/pi/rnl_certs
 ```
 This folder should be mounted always as `/app/config` volume when running the docker container.
 
-Start RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. 
-For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
+Start the RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
 ```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -p 3000:3000 --dns=127.0.0.1 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/otbr:dev-0.9.10
-```
-
-Notice that the first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. 
-For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
-
-Upon success, you should have output similar to this:
-```
-WARNING: Localhost DNS setting (--dns=127.0.0.1) may fail in containers.
-RADIO_URL: spinel+hdlc+uart:///dev/ttyACM0
-TUN_INTERFACE_NAME: wpan0
-NAT64_PREFIX: 64:ff9b::/96
-AUTO_PREFIX_ROUTE: true
-AUTO_PREFIX_SLAAC: true
-Current platform is ubuntu
-* Applying /etc/sysctl.d/10-console-messages.conf ...
-kernel.printk = 4 4 1 7
-* Applying /etc/sysctl.d/10-ipv6-privacy.conf ...
-net.ipv6.conf.all.use_tempaddr = 2
-net.ipv6.conf.default.use_tempaddr = 2
-* Applying /etc/sysctl.d/10-kernel-hardening.conf ...
-kernel.kptr_restrict = 1
-* Applying /etc/sysctl.d/10-link-restrictions.conf ...
-fs.protected_hardlinks = 1
-fs.protected_symlinks = 1
-* Applying /etc/sysctl.d/10-magic-sysrq.conf ...
-kernel.sysrq = 176
-* Applying /etc/sysctl.d/10-network-security.conf ...
-net.ipv4.conf.default.rp_filter = 1
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.tcp_syncookies = 1
-* Applying /etc/sysctl.d/10-ptrace.conf ...
-kernel.yama.ptrace_scope = 1
-* Applying /etc/sysctl.d/10-zeropage.conf ...
-vm.mmap_min_addr = 65536
-* Applying /etc/sysctl.d/60-otbr-ip-forward.conf ...
-net.ipv6.conf.all.forwarding = 1
-net.ipv4.ip_forward = 1
-* Applying /etc/sysctl.conf ...
-* Starting userspace NAT64 tayga             [ OK ]
-/usr/sbin/service
-* Starting domain name service... bind9      [ OK ]
-/usr/sbin/service
-* dbus is not running
-* Starting system message bus dbus           [ OK ]
-...fail!
-otWeb[155]: border router web started on wpan0
-otbr-agent[224]: Thread interface wpan0
-otbr-agent[224]: Thread is down
-otbr-agent[224]: Check if Thread is up: OK
-otbr-agent[224]: Stop publishing service
-otbr-agent[224]: PSKc is not initialized
-otbr-agent[224]: Check if PSKc is initialized: OK
-otbr-agent[224]: Initialize OpenThread Border Router Agent: OK
-otbr-agent[224]: Border router agent started.
+docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/rnb-otbr:TAG
 ```
 
-RNB OTBR Docker is now running. Leave this terminal window open and running in the background. 
-If you quit the process or close the window, RNB OTBR Docker will go down.
+> The MQTT API uses requires using the port 1883. If the port is already used in the host, the docker initialization will fail. Disable services in the host that might be using it, such as Mosquitto.
 
-On the Raspberry Pi running RNB OTBR Docker, open a browser and go to `127.0.0.1:3000`.
-If the Docker is running correctly, the management Web GUI loads and the MQTT API can be used to interact with the system.
+> The first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
 
-### MQTT API Specification
+### Running the RNB OTBR WEB UI Docker
 
-Corresponding version of the API documentation can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EcguiJWVoB1EotfQfFYa1wYBNxxwXdcI_h5OZ4KZ68xFzQ?e=qbODlg).
+In order to visualize and control the RedNodeBus services, a web UI is also provided as a docker service in the [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr-web-ui).
+
+The following docker compose template can be used to launch both RNB OTBR and RNB OTBR WEB UI services:
+
+``` yaml
+version: '3.8'
+services:
+  rnb-otbr:
+    image: rednodelabs/rnb-otbr:TAG
+    platform: linux/arm64
+    ports:
+      - "1883:1883"
+    privileged: true
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv4.conf.all.forwarding=1
+    volumes:
+      - /home/pi/rnl_certs:/app/config
+      - /dev/ttyACM0:/dev/ttyACM0
+    environment:
+      - RADIO_URL=spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=921600
+
+  rnb-otbr-web-ui:
+    image: rednodelabs/rnb-otbr-web-ui:TAG
+    platform: linux/arm64
+    ports:
+      - "3000:3000"
+    environment:
+      - WEB_UI_PORT=3000
+      - MQTT_HOST=rnb-otbr
+      - MQTT_PORT=1883
+```
+
+Please, specify the right TAGs and desired parameters, such as the path of the volume with the certificates and the right serial port name.
+
+In order to launch the services, save the template as a yaml file and run docker compose as follows:
+```
+docker compose up
+```
+
+Remember to bring it down before relaunching it:
+In order to launch the services, save the template as a yaml file and run docker compose as follows:
+```
+docker compose down
+```
+
+On the Raspberry Pi running the docker containers, open a browser and go to `127.0.0.1:3000` to acces the web UI.
+
+### MQTT API
+
+The MQTT API can be also used to interact with the system. For further details, read the API documentation.
+
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EQkNP71cerBPtfZfLqmzzjcBjoomlp92HTUi65Sl1YwWyg?e=R6c99K).

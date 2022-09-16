@@ -1,80 +1,52 @@
 manifest:
-  version: "0.10"
-
-  # "remotes" is a list of locations where git repositories are cloned
-  # and fetched from.
+  version: '0.10'
   remotes:
-    - name: rnl
-      url-base: https://github.com/rednodelabs
-    - name: ncs
-      url-base: https://github.com/nrfconnect
-
-  # If not otherwise specified, the projects below should be obtained
-  # from the ncs remote.
+  - name: rnl
+    url-base: https://github.com/rednodelabs
+  - name: ncs
+    url-base: https://github.com/nrfconnect
   defaults:
     remote: rnl
-
-  group-filter: [+rnl-pub,-rnl-pri]
-
-  # "projects" is a list of git repositories which make up the NCS
-  # source code.
   projects:
-    - name: nrf
-      repo-path: sdk-nrf
-      remote: ncs
-      revision: v1.8-branch
-      import:
-        name-blocklist:
-          - zephyr
-          - openthread
-    - name: zephyr
-      revision: nrfconnect/v0.9.9
-      import:
-        # In addition to the zephyr repository itself, NCS also
-        # imports the contents of zephyr/west.yml at the above
-        # revision. Only the projects explicitly named in the
-        # following allowlist are imported.
-        #
-        # Note that the zephyr west extensions (like 'build', 'flash',
-        # 'debug', etc.) are automatically provided by this import, so
-        # there's no need to add a redundant west-commands: key for
-        # the zephyr project.
-        #
-        # Please keep this list sorted alphabetically.
-        name-allowlist:
-          - canopennode
-          - civetweb
-          - cmsis
-          - edtt
-          - fatfs
-          - hal_nordic
-          - hal_st
-          - libmetal
-          - littlefs
-          - loramac-node
-          - lvgl
-          - lz4
-          - mbedtls
-          - mcumgr
-          - mipi-sys-t
-          - nanopb
-          - net-tools
-          - nrf_hw_models
-          - open-amp
-          - segger
-          - tinycbor
-          - tinycrypt
-          - TraceRecorderSource
-    - name: openthread
-      revision: zephyrproject-rtos/v0.9.6
-      path: modules/lib/openthread
-    - name: rednodebus-release
-      revision: v0.9.10
-      groups:
-        - rnl-pub
-    - name: rednodebus
-      revision: v0.9.10
-      groups:
-        - rnl-pri
+  - name: nrf
+    repo-path: sdk-nrf
+    remote: ncs
+    revision: v1.8.0
+    import:
+      name-blocklist:
+      - zephyr
+      - openthread
+  - name: zephyr
+    revision: nrfconnect/v0.9.11
+    import:
+      name-allowlist:
+      - canopennode
+      - civetweb
+      - cmsis
+      - edtt
+      - fatfs
+      - hal_nordic
+      - hal_st
+      - libmetal
+      - littlefs
+      - loramac-node
+      - lvgl
+      - lz4
+      - mbedtls
+      - mcumgr
+      - mipi-sys-t
+      - nanopb
+      - net-tools
+      - nrf_hw_models
+      - open-amp
+      - segger
+      - tinycbor
+      - tinycrypt
+      - TraceRecorderSource
+  - name: openthread
+    revision: zephyrproject-rtos/v0.9.6
+    path: modules/lib/openthread
+  - name: rednodebus-release
+    revision: v0.9.11
   self:
     path: rednodebus-samples

@@ -18,9 +18,8 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_DBG);
 
 #include "rnb_utils.h"
 
-
 /* Convenience defines for RADIO */
-#define REDNODEBUS_API(dev)		((const struct ieee802154_radio_api * const)(dev)->api)
+#define REDNODEBUS_API(dev) ((const struct ieee802154_radio_api *const)(dev)->api)
 
 struct rednodebus_utils_event
 {
@@ -30,7 +29,6 @@ struct rednodebus_utils_event
 	struct rednodebus_user_event_params params;
 	bool in_use;
 };
-
 
 /* RedNodeBus utils stack. */
 static K_KERNEL_STACK_MEMBER(rnb_utils_stack, REDNODEBUS_UTILS_STACK_SIZE);
@@ -52,13 +50,12 @@ static void print_rnb_role(const uint8_t role);
 static void print_rnb_uwb_mode(const uint8_t uwb_mode);
 static void print_rnb_ranging_mode(const uint8_t ranging_mode);
 static void handle_rnb_user_event(const struct device *dev,
-								  enum rednodebus_user_event evt,
-								  void *event_params);
+				  enum rednodebus_user_event evt,
+				  void *event_params);
 static void process_rnb_utils_event(const struct device *dev,
-									const enum rednodebus_user_event event,
-									const struct rednodebus_user_event_params *params);
+				    const enum rednodebus_user_event event,
+				    const struct rednodebus_user_event_params *params);
 static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
-
 
 static void print_rnb_state(const uint8_t state)
 {
@@ -156,8 +153,8 @@ static void print_rnb_ranging_mode(const uint8_t ranging_mode)
 }
 
 static void handle_rnb_user_event(const struct device *dev,
-		enum rednodebus_user_event evt,
-		void *event_params)
+				  enum rednodebus_user_event evt,
+				  void *event_params)
 {
 	for (uint8_t i = 0; i < ARRAY_SIZE(rnb_utils_events); i++)
 	{
@@ -172,8 +169,8 @@ static void handle_rnb_user_event(const struct device *dev,
 		rnb_utils_events[i].event = evt;
 
 		memcpy(&rnb_utils_events[i].params,
-			   event_params,
-			   sizeof(struct rednodebus_user_event_params));
+		       event_params,
+		       sizeof(struct rednodebus_user_event_params));
 
 		k_fifo_put(&rnb_utils_event_fifo, &rnb_utils_events[i]);
 
@@ -184,9 +181,11 @@ static void handle_rnb_user_event(const struct device *dev,
 }
 
 static void process_rnb_utils_event(const struct device *dev,
-		const enum rednodebus_user_event event,
-		const struct rednodebus_user_event_params *params)
+				    const enum rednodebus_user_event event,
+				    const struct rednodebus_user_event_params *params)
 {
+	int ret;
+
 	switch (event)
 	{
 	case REDNODEBUS_USER_EVENT_NEW_STATE:
@@ -207,9 +206,23 @@ static void process_rnb_utils_event(const struct device *dev,
 		{
 			if (!rnb_configured)
 			{
-				REDNODEBUS_API(dev)->init_rnb_config(dev, &rnb_user_config);
+				ret = REDNODEBUS_API(dev)->init_rnb_config(dev, &rnb_user_config);
 
-				REDNODEBUS_API(dev)->update_rnb_runtime_config(dev, &rnb_user_runtime_config);
+				if (ret != 0)
+				{
+					LOG_ERR("Error in init_rnb_config");
+
+					return;
+				}
+
+				ret = REDNODEBUS_API(dev)->update_rnb_runtime_config(dev, &rnb_user_runtime_config);
+
+				if (ret != 0)
+				{
+					LOG_ERR("Error in update_rnb_runtime_config");
+
+					return;
+				}
 
 				rnb_configured = true;
 
@@ -218,7 +231,7 @@ static void process_rnb_utils_event(const struct device *dev,
 		}
 
 		if ((params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
-			(params->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
+		    (params->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
 		{
 			print_rnb_uwb_mode(params->uwb_mode);
 			print_rnb_ranging_mode(params->ranging_mode);
@@ -258,14 +271,7 @@ int init_rnb(void)
 	rnb_user_config.sync_active_period_ms = 2000;
 	rnb_user_config.sync_sleep_period_ms = 10000;
 
-#if defined(CONFIG_SOC_NRF52840)
-	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
-	rnb_user_runtime_config.tx_power = 0x08; // +8 dBm
-#else
-	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
-	rnb_user_runtime_config.tx_power = 0x04; // +4 dBm
-#endif
-	rnb_user_runtime_config.energy_save_mode_enabled = false;
+	rnb_user_runtime_config.energy_save_mode_enabled = true;
 #if defined(CONFIG_REDNODERANGING)
 	rnb_user_runtime_config.ranging_enabled = true;
 #else
@@ -276,15 +282,15 @@ int init_rnb(void)
 	k_fifo_init(&rnb_utils_event_fifo);
 
 	k_thread_create(&rnb_utils_thread,
-					rnb_utils_stack,
-					REDNODEBUS_UTILS_STACK_SIZE,
-					rnb_utils_process_thread,
-					NULL,
-					NULL,
-					NULL,
-					K_PRIO_PREEMPT(REDNODEBUS_UTILS_THREAD_PRIORITY),
-					0,
-					K_NO_WAIT);
+			rnb_utils_stack,
+			REDNODEBUS_UTILS_STACK_SIZE,
+			rnb_utils_process_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(REDNODEBUS_UTILS_THREAD_PRIORITY),
+			0,
+			K_NO_WAIT);
 
 	k_thread_name_set(&rnb_utils_thread, "rnb_utils_thread");
 

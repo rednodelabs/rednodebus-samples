@@ -11,10 +11,26 @@ tests:
       integration_platforms:
         - nrf52840dk_nrf52840
         - nrf52840dongle_nrf52840
+  samples.openthread.coprocessor.rnb.usb.ranging_diag:
+      build_only: true
+      platform_allow: nrf52840dk_nrf52840 nrf52840dongle_nrf52840
+      tags: ci_build
+      extra_args: OVERLAY_CONFIG=overlay-rcp-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb.conf;../common/overlay-rednodebus-ranging-diagnostic.conf
+                  DTC_OVERLAY_FILE="usb.overlay"
+      integration_platforms:
+        - nrf52840dk_nrf52840
+        - nrf52840dongle_nrf52840
   samples.openthread.coprocessor.rnb.uart:
     build_only: true
     platform_allow: nrf52840dk_nrf52840
     tags: ci_build
     extra_args: OVERLAY_CONFIG=overlay-rcp-rnb.conf;overlay-vendor_hook-rnb.conf
+    integration_platforms:
+      - nrf52840dk_nrf52840
+  samples.openthread.coprocessor.rnb.uart.ranging_diag:
+    build_only: true
+    platform_allow: nrf52840dk_nrf52840
+    tags: ci_build
+    extra_args: OVERLAY_CONFIG=overlay-rcp-rnb.conf;overlay-vendor_hook-rnb.conf;../common/overlay-rednodebus-ranging-diagnostic.conf
     integration_platforms:
       - nrf52840dk_nrf52840

@@ -7,6 +7,7 @@
 	current-speed = <921600>;
 	status = "okay";
 	hw-flow-control;
+	interrupts = <2 4>;
 };
 
 &uart1 {
