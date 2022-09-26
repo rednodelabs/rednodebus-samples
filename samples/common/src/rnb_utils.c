@@ -15,6 +15,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_DBG);
 
 #include <net/ieee802154_radio.h>
 #include <net/openthread.h>
+#include <openthread/platform/radio.h>
 
 #include "rnb_utils.h"
 
@@ -227,6 +228,14 @@ static void process_rnb_utils_event(const struct device *dev,
 				rnb_configured = true;
 
 				openthread_start(openthread_get_default_context());
+
+#if defined(CONFIG_SOC_NRF52840)
+				// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
+				otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 8); // +8 dBm
+#else
+				// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
+				otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 4); // +4 dBm
+#endif
 			}
 		}
 

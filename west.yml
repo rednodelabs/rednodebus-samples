@@ -47,6 +47,6 @@ manifest:
     revision: zephyrproject-rtos/v0.9.6
     path: modules/lib/openthread
   - name: rednodebus-release
-    revision: v0.9.11
+    revision: v0.9.12
   self:
     path: rednodebus-samples
