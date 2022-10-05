@@ -138,6 +138,9 @@ static void print_rnb_ranging_mode(const uint8_t ranging_mode)
 	case REDNODEBUS_USER_RANGING_MODE_2W_A2T:
 		LOG_INF("RNB ranging mode: 2W_A2T");
 		break;
+	case REDNODEBUS_USER_RANGING_MODE_2W_A2A:
+		LOG_INF("RNB ranging mode: 2W_A2A");
+		break;
 	case REDNODEBUS_USER_RANGING_MODE_3W_A2T:
 		LOG_INF("RNB ranging mode: 3W_A2T");
 		break;

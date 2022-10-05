@@ -17,7 +17,7 @@ manifest:
       - zephyr
       - openthread
   - name: zephyr
-    revision: nrfconnect/v0.9.11
+    revision: nrfconnect/v0.9.13
     import:
       name-allowlist:
       - canopennode
@@ -47,6 +47,6 @@ manifest:
     revision: zephyrproject-rtos/v0.9.6
     path: modules/lib/openthread
   - name: rednodebus-release
-    revision: v0.9.12
+    revision: v0.9.13
   self:
     path: rednodebus-samples

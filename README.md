@@ -368,4 +368,4 @@ On the Raspberry Pi running the docker containers, open a browser and go to `127
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EQkNP71cerBPtfZfLqmzzjcBjoomlp92HTUi65Sl1YwWyg?e=R6c99K).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EZA2a-S1FEhEukIPBZebMw8BooecY_VtYihOT6Wz9jLhIg?e=j7EMOI).
