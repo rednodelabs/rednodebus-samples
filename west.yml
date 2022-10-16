@@ -17,7 +17,7 @@ manifest:
       - zephyr
       - openthread
   - name: zephyr
-    revision: nrfconnect/v0.9.13
+    revision: nrfconnect/v0.9.14
     import:
       name-allowlist:
       - canopennode
@@ -44,9 +44,9 @@ manifest:
       - tinycrypt
       - TraceRecorderSource
   - name: openthread
-    revision: zephyrproject-rtos/v0.9.6
+    revision: zephyrproject-rtos/v0.9.14
     path: modules/lib/openthread
   - name: rednodebus-release
-    revision: v0.9.13
+    revision: v0.9.14
   self:
     path: rednodebus-samples

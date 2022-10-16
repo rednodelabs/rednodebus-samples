@@ -7,7 +7,7 @@
  */
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 
 #include <zephyr.h>
 #include <errno.h>
@@ -32,13 +32,16 @@ struct rednodebus_utils_event
 };
 
 /* RedNodeBus utils stack. */
-static K_KERNEL_STACK_MEMBER(rnb_utils_stack, REDNODEBUS_UTILS_STACK_SIZE);
+static K_THREAD_STACK_DEFINE(rnb_utils_stack, REDNODEBUS_UTILS_STACK_SIZE);
 
 /* RedNodeBus utils thread control block. */
 static struct k_thread rnb_utils_thread;
 
 /* RedNodeBus utils event fifo queue. */
 static struct k_fifo rnb_utils_event_fifo;
+
+/* RedNodeBus OT start work. */
+struct k_work_delayable ot_start_work;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
 static bool rnb_configured;
@@ -57,6 +60,43 @@ static void process_rnb_utils_event(const struct device *dev,
 				    const enum rednodebus_user_event event,
 				    const struct rednodebus_user_event_params *params);
 static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
+static void ot_start_work_handler(struct k_work *item);
+static void rnb_utils_get_euid(uint8_t *euid);
+
+static void ot_start_work_handler(struct k_work *item)
+{
+	ARG_UNUSED(item);
+
+	openthread_start(openthread_get_default_context());
+
+#if defined(CONFIG_SOC_NRF52840)
+	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 8); // +8 dBm
+#else
+	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 4); // +4 dBm
+#endif
+}
+
+
+void rnb_utils_get_euid(uint8_t *euid)
+{
+	/*
+	 * NRF_FICR->DEVICEADDR[] is array of 32-bit words.
+	 * NRF_FICR->DEVICEADDR yields type (unit32_t*)
+	 * Cast: (uint64_t*) NRF_FICR->DEVICEADDR yields type (unit64_t*)
+	 * Dereferencing: *(uint64_t*) NRF_FICR->DEVICEADDR yields type uint64_t
+	 *
+	 * Nordic doc asserts upper two bytes read all ones.
+	 */
+	uint64_t my_euid = *((uint64_t *)NRF_FICR->DEVICEADDR);
+
+	// Mask off upper bytes, to match over-the-air length of 6 bytes.
+	my_euid &= (((uint64_t)1) << (REDNODEBUS_UTILS_EUID_BYTE_LENGTH * 8)) - 1;
+
+	memcpy(euid, &my_euid, REDNODEBUS_UTILS_EUID_BYTE_LENGTH);
+}
+
 
 static void print_rnb_state(const uint8_t state)
 {
@@ -188,6 +228,7 @@ static void process_rnb_utils_event(const struct device *dev,
 				    const enum rednodebus_user_event event,
 				    const struct rednodebus_user_event_params *params)
 {
+	const struct rednodebus_user_event_state *event_state;
 	int ret;
 
 	switch (event)
@@ -195,22 +236,26 @@ static void process_rnb_utils_event(const struct device *dev,
 	case REDNODEBUS_USER_EVENT_NEW_STATE:
 		LOG_DBG("RNB user event new state");
 
-		print_rnb_state(params->state);
+		event_state = &params->state;
 
-		if (params->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
+		print_rnb_state(event_state->state);
+
+		LOG_INF("RNB ID: 0x%04X", event_state->rnb_id);
+
+		if (event_state->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
 		{
-			if (params->role != REDNODEBUS_USER_ROLE_UNDEFINED)
+			if (event_state->role != REDNODEBUS_USER_ROLE_UNDEFINED)
 			{
-				print_rnb_role(params->role);
+				print_rnb_role(event_state->role);
 			}
 
-			LOG_INF("RNB period ms %u", params->period_ms);
+			LOG_INF("RNB period ms: %u", event_state->period_ms);
 		}
-		else if (params->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
+		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
 		{
 			if (!rnb_configured)
 			{
-				ret = REDNODEBUS_API(dev)->init_rnb_config(dev, &rnb_user_config);
+				ret = REDNODEBUS_API(dev)->init_rnb_user_config(dev, &rnb_user_config);
 
 				if (ret != 0)
 				{
@@ -219,7 +264,7 @@ static void process_rnb_utils_event(const struct device *dev,
 					return;
 				}
 
-				ret = REDNODEBUS_API(dev)->update_rnb_runtime_config(dev, &rnb_user_runtime_config);
+				ret = REDNODEBUS_API(dev)->update_rnb_user_runtime_config(dev, &rnb_user_runtime_config);
 
 				if (ret != 0)
 				{
@@ -230,23 +275,22 @@ static void process_rnb_utils_event(const struct device *dev,
 
 				rnb_configured = true;
 
-				openthread_start(openthread_get_default_context());
-
-#if defined(CONFIG_SOC_NRF52840)
-				// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
-				otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 8); // +8 dBm
-#else
-				// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
-				otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 4); // +4 dBm
-#endif
+				k_work_schedule(&ot_start_work, K_SECONDS(1));
+			}
+			else
+			{
+				// In order to reset RNB_ID
+				// struct rednodebus_user_settings rnb_user_settings;
+				// rnb_user_settings.rnb_id = 0;
+				// ret = REDNODEBUS_API(dev)->set_rnb_user_settings(dev, &rnb_user_settings);
 			}
 		}
 
-		if ((params->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
-		    (params->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
+		if ((event_state->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
+		    (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
 		{
-			print_rnb_uwb_mode(params->uwb_mode);
-			print_rnb_ranging_mode(params->ranging_mode);
+			print_rnb_uwb_mode(event_state->uwb_mode);
+			print_rnb_ranging_mode(event_state->ranging_mode);
 		}
 		break;
 	default:
@@ -275,10 +319,14 @@ static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
 
 int init_rnb(void)
 {
+	uint64_t euid = 0;
+	rnb_utils_get_euid((uint8_t *)&euid);
+
+	LOG_INF("EUID 0x%04X%04X", (uint32_t)(euid >> 32), (uint32_t)euid);
+
 	rnb_configured = false;
 	rnb_connected = false;
 
-	rnb_user_config.network_id = 0;
 	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
 	rnb_user_config.sync_active_period_ms = 2000;
 	rnb_user_config.sync_sleep_period_ms = 10000;
@@ -305,6 +353,8 @@ int init_rnb(void)
 			K_NO_WAIT);
 
 	k_thread_name_set(&rnb_utils_thread, "rnb_utils_thread");
+
+	k_work_init_delayable(&ot_start_work, ot_start_work_handler);
 
 	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
 	struct ieee802154_config ieee802154_config;

@@ -1,6 +1,6 @@
 import socket
 
-local_ip="0.0.0.0"
+local_ip="172.17.0.1"
 local_port=4242
 bufferSize=2048
 
@@ -13,7 +13,7 @@ sock.bind(server)
 
 print("Listening on " + local_ip + ":" + str(local_port))
 
-#Listen 
+#Listen
 
 while (True):
     payload, client_address = sock.recvfrom(bufferSize)

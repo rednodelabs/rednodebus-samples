@@ -7,12 +7,11 @@ This repository includes a list of samples integrating OpenThread + RedNodeBus (
 ## Prerequisites
 Read the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your environment with the required tools and dependencies.
 
-The [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain) version used for these samples is 10.3.1.
+The [Zephyr SDK](https://github.com/zephyrproject-rtos/sdk-ng) version used for these samples is `0.14.2`.
 
 Remember to set the required environment variables:
 ```
-export GNUARMEMB_TOOLCHAIN_PATH=/PathTo/ArmGNUToolchain/
-export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 ```
 
 ## Init
@@ -247,7 +246,7 @@ nrfjprog -e
 west flash
 ```
 > By default the baudrate is set to 921600 in the RNB OTBR Docker. When using the on-board debugger as interface, it is recommended to set it to 1000000 in `nrf52840dk_nrf52840.overlay`, and specifying the change when running the docker by adding the
-following parameter to the `docker run` command: `--radio-url “spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=1000000”`.
+following parameter to the `docker run` command: `--radio-url “spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=1000000&uart-flow-control”`.
 
 ##### Mass Storage Device known issue (only for UART interface through the on-board debugger)
 Depending on your version, due to a known issue in SEGGER's J-Link firmware, you might experience data corruption or data drops if you use the serial port. You can avoid this issue by disabling the Mass Storage Device.
@@ -336,7 +335,7 @@ services:
       - /home/pi/rnl_certs:/app/config
       - /dev/ttyACM0:/dev/ttyACM0
     environment:
-      - RADIO_URL=spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=921600
+      - RADIO_URL=spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=921600&uart-flow-control
 
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
@@ -368,4 +367,4 @@ On the Raspberry Pi running the docker containers, open a browser and go to `127
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EZA2a-S1FEhEukIPBZebMw8BooecY_VtYihOT6Wz9jLhIg?e=j7EMOI).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EX_PFtej2_lBsVAJyeMG_XIBFQ4_hwrBCuJRwgMOGRqE0g?e=TseCKu).
