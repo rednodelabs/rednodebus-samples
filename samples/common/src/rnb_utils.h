@@ -22,6 +22,7 @@
 
 int init_rnb(void);
 bool is_rnb_connected(void);
+void rnb_utils_get_euid(uint64_t *euid);
 
 #endif
 

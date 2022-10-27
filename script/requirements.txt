@@ -1,1 +1,2 @@
 aiocoap==0.4.3
+prettytable

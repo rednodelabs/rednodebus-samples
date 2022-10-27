@@ -1,8 +1,8 @@
 sample:
-  name: Node RedNodeBus
-  description: Test Node RedNodeBus
+  name: Socket Test
+  description: Test transmission performance of UDP client
 tests:
-  samples.rednodebus_node:
+  samples.socket_test:
       build_only: true
       platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev nrf52840dongle_nrf52840
       tags: ci_build

@@ -4,7 +4,7 @@
  */
 
 &uart0 {
-	current-speed = <921600>;
+	current-speed = <1000000>;
 	status = "okay";
 	hw-flow-control;
 	interrupts = <2 4>;
