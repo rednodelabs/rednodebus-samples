@@ -25,9 +25,9 @@ LOG_MODULE_REGISTER(net_socket_test_sample, LOG_LEVEL_DBG);
 #include <net/net_conn_mgr.h>
 #include <net/ieee802154_radio.h>
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 #include "rnb_utils.h"
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 #include "common.h"
 
@@ -49,34 +49,33 @@ void rnb_utils_handle_new_state(const struct rednodebus_user_event_state *event_
  * 2 paragraphs, 179 words, 1160 bytes of Lorem Ipsum
  */
 char lorem_ipsum[] =
-	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque "
-	"sodales lorem lorem, sed congue enim vehicula a. Sed finibus diam sed "
-	"odio ultrices pharetra. Nullam dictum arcu ultricies turpis congue, "
-	"vel venenatis turpis venenatis. Nam tempus arcu eros, ac congue libero "
-	"tristique congue. Proin velit lectus, euismod sit amet quam in, "
-	"maximus condimentum urna. Cras vel erat luctus, mattis orci ut, varius "
-	"urna. Nam eu lobortis velit."
-	"\n"
-	"Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
-	"fringilla, enim nec consectetur mollis, lorem orci interdum nisi, "
-	"vitae suscipit nisi mauris eu mi. Proin diam enim, mollis ac rhoncus "
-	"vitae, placerat et eros. Suspendisse convallis, ipsum nec rhoncus "
-	"aliquam, ex augue ultrices nisl, id aliquet mi diam quis ante. "
-	"Pellentesque venenatis ornare ultrices. Quisque et porttitor lectus. "
-	"Ut venenatis nunc et urna imperdiet porttitor non laoreet massa. Donec "
-	"eleifend eros in mi sagittis egestas. Sed et mi nunc. Nunc vulputate, "
-	"mauris non ullamcorper viverra, lorem nulla vulputate diam, et congue "
-	"dui velit non erat. Duis interdum leo et ipsum tempor consequat. In "
-	"faucibus enim quis purus vulputate nullam."
-	"\n";
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque "
+    "sodales lorem lorem, sed congue enim vehicula a. Sed finibus diam sed "
+    "odio ultrices pharetra. Nullam dictum arcu ultricies turpis congue, "
+    "vel venenatis turpis venenatis. Nam tempus arcu eros, ac congue libero "
+    "tristique congue. Proin velit lectus, euismod sit amet quam in, "
+    "maximus condimentum urna. Cras vel erat luctus, mattis orci ut, varius "
+    "urna. Nam eu lobortis velit."
+    "\n"
+    "Nullam sit amet diam vel odio sodales cursus vehicula eu arcu. Proin "
+    "fringilla, enim nec consectetur mollis, lorem orci interdum nisi, "
+    "vitae suscipit nisi mauris eu mi. Proin diam enim, mollis ac rhoncus "
+    "vitae, placerat et eros. Suspendisse convallis, ipsum nec rhoncus "
+    "aliquam, ex augue ultrices nisl, id aliquet mi diam quis ante. "
+    "Pellentesque venenatis ornare ultrices. Quisque et porttitor lectus. "
+    "Ut venenatis nunc et urna imperdiet porttitor non laoreet massa. Donec "
+    "eleifend eros in mi sagittis egestas. Sed et mi nunc. Nunc vulputate, "
+    "mauris non ullamcorper viverra, lorem nulla vulputate diam, et congue "
+    "dui velit non erat. Duis interdum leo et ipsum tempor consequat. In "
+    "faucibus enim quis purus vulputate nullam."
+    "\n";
 
 const int ipsum_len = sizeof(lorem_ipsum) - 1;
 
 struct configs conf = {
-	.ipv6 = {
-		.proto = "IPv6",
-		.udp.sock = INVALID_SOCK
-	},
+    .ipv6 = {
+	.proto = "IPv6",
+	.udp.sock = INVALID_SOCK},
 };
 
 static void init_app(void)
@@ -100,17 +99,20 @@ static int start_client(void)
 	int i = 0;
 	int ret;
 
-	while (iterations == 0 || i < iterations) {
+	while (iterations == 0 || i < iterations)
+	{
 		ret = start_udp();
 
-		while (ret == 0) {
+		while (ret == 0)
+		{
 			send_udp_data(&conf.ipv6);
 
-			if (iterations > 0) {
+			if (iterations > 0)
+			{
 				i++;
-				if (i >= iterations) {
+				if (i >= iterations)
+				{
 					break;
-
 				}
 			}
 			if (rnb_role == REDNODEBUS_USER_ROLE_TAG)
@@ -129,7 +131,7 @@ static int start_client(void)
 
 void main(void)
 {
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 	init_rnb();
 
 	while (!is_rnb_connected())
@@ -138,7 +140,7 @@ void main(void)
 	}
 
 	k_sleep(K_MSEC(1000));
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 	init_app();
 

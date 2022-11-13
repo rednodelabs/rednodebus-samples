@@ -2,7 +2,7 @@
 
 # RedNodeBus Samples
 
-This repository includes a list of samples integrating OpenThread + RedNodeBus (RNB) stack, based on [Zephyr OS](https://www.zephyrproject.org/).
+This repository includes a list of samples integrating OpenThread with the RedNodeBus (RNB) stack, providing an extremely reliable, energy-efficient and real-time positioning and data bus based on [Zephyr OS](https://www.zephyrproject.org/).
 
 ## Prerequisites
 Read the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your environment with the required tools and dependencies.
@@ -29,27 +29,10 @@ west update
 
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
-## RNB Lib Configuration
-In case a previous OpenThread (OT) configuration has been programmed in the board, we recommend erasing the flash completely. This way, we can assure that the new OT configuration will be written correctly:
-```
-nrfjprog -e
-```
+## RNB Lib
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EagqIY9I2jdHgHfCq_X6SywBk6kypachy1yygFSmYvbN1A?e=7rn8Dm).
 
-To configure the board to act as an anchor, modify the following line in the `rnb_utils.c` file of the sample you are using:
-```
-rnb_user_config.role = REDNODEBUS_USER_ROLE_ANCHOR;
-```
-Similarly, to configure the board to act as a tag:
-```
-rnb_user_config.role = REDNODEBUS_USER_ROLE_TAG;
-```
-
-To use different OT credentials, specify them in `samples/common/overlay-ot-defaults.conf`.
-
-To enable the RedNodeBus ranging diagnostic, add the overlay to `OVERLAY_CONFIG` when building the sample projects as following:
-`../common/overlay-rednodebus-ranging-diagnostic.conf`. Note that this is mainly for debugging purposes, since the power consumption will increase.
-
-To test the system, flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+To test the system, flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md)or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
 
@@ -76,65 +59,7 @@ docker pull rednodelabs/rnb-otbr:TAG
 
 RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. This sample has been developed to be used with the multiple boards. You can directly download the binaries from [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for some boards and default configurations.
 
-If other configurations are required, e.g. different UART pins or baudrates, follow the build instructions below:
-
-### nrf52840dk_nrf52840 board
-#### With USB interface:
-```
-west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
-```
-```
-nrfjprog -e
-west flash
-```
-#### With UART interface:
-```
-west build -p -b nrf52840dk_nrf52840 samples/coprocessor -- -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
-```
-
-##### Mass Storage Device known issue (only for UART interface through the on-board debugger)
-Depending on your version, due to a known issue in SEGGER's J-Link firmware, you might experience data corruption or data drops if you use the serial port. You can avoid this issue by disabling the Mass Storage Device.
-
-###### Disabling the Mass Storage Device on Linux
-1. Connect the DK to your machine with a USB cable.
-2. Run `JLinkExe` to connect to the target. For example:
-```
-JLinkExe -device NRF52840_XXAA -if SWD -speed 4000 -autoconnect 1 -SelectEmuBySN <SEGGER_ID>
-```
-3. Run the following command:
-```
-MSDDisable
-```
-4. Power cycle the DK.
-
-##### Hardware Flow Control detection (only for UART interface through the on-board debugger)
-By default, SEGGER J-Link automatically detects at runtime whether the target is using Hardware Flow Control (HWFC).
-
-The automatic HWFC detection is done by driving P0.07 (Clear to Send - CTS) from the interface MCU and evaluating the state of P0.05 (Request to Send - RTS) when the first data is sent or received. If the state of P0.05 (RTS) is high, it is assumed that HWFC is not used.
-
-To avoid potential race conditions, you can force HWFC and bypass the runtime auto-detection.
-
-###### Disabling the HWFC detection on Linux
-1. Connect the DK to your machine with a USB cable.
-2. Run `JLinkExe` to connect to the target. For example:
-```
-JLinkExe -device NRF52840_XXAA -if SWD -speed 4000 -autoconnect 1 -SelectEmuBySN <SEGGER_ID>
-```
-3. Run the following command:
-```
-SetHWFC Force
-```
-4. Power cycle the DK.
-
-### nrf52840dongle_nrf52840 board
-#### With USB interface:
-```
-west build -p -b nrf52840dongle_nrf52840 samples/coprocessor -- -DDTC_OVERLAY_FILE=usb.overlay -DOVERLAY_CONFIG="overlay-rcp-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb.conf"
-```
+If other configurations are required, e.g. different UART pins or baudrates, follow the build instructions [here](samples/coprocessor/README.md).
 
 ### Running the RNB OTBR Docker
 After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB. Determine the serial port name for the RCP device by checking /dev:
@@ -210,6 +135,8 @@ docker compose down
 ```
 
 On the Raspberry Pi running the docker containers, open a browser and go to `127.0.0.1:3000` to acces the web UI.
+
+> The web UI can be accessed from a different machine in the same local network as the Raspberry Pi, e.g. entering `raspberrypi:3000`, to avoid the load of the graphical interface in the Pi.
 
 ### MQTT API
 

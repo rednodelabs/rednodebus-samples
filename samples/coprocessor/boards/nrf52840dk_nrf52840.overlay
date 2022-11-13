@@ -26,4 +26,9 @@
 		zephyr,entropy = &rng;
 		zephyr,ot-uart = &uart0;
 	};
+
+	aliases {
+		rnb-tx-led = &led0;
+		rnb-rx-led = &led1;
+	};
 };

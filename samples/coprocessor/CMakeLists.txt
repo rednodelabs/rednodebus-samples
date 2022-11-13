@@ -22,8 +22,13 @@ if("overlay-rcp-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
 target_compile_definitions_ifdef(CONFIG_NET_L2_OPENTHREAD ot-config INTERFACE "OPENTHREAD_CONFIG_CHILD_SUPERVISION_MSG_NO_ACK_REQUEST=1")
 endif()
 
+
 # NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c src/nrf_802154_radio_wrapper.c ${CMAKE_BINARY_DIR}/generated/rnb_coprocessor_version.c)
+target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
+  ../common/src)
+target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
+  ../common/src/rnb_leds.c)
 
 target_include_directories(app PUBLIC ../../include)
 # NORDIC SDK APP END

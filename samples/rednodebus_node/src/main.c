@@ -9,16 +9,15 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(rednodebus_node, LOG_LEVEL_INF);
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 #include "rnb_utils.h"
-#endif
-
+#endif /* CONFIG_REDNODEBUS */
 
 void main(void)
 {
     LOG_INF("RedNodeBus node sample");
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
     init_rnb();
-#endif
+#endif /* CONFIG_REDNODEBUS */
 }

@@ -16,9 +16,9 @@
 #include "ble_utils.h"
 #endif
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 #include "rnb_utils.h"
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 #ifdef CONFIG_BOOTLOADER_MCUBOOT
 #include <dfu/mcuboot.h>
@@ -167,9 +167,9 @@ void main(void)
 //		return;
 //	}
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
     init_rnb();
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 #if CONFIG_BT_NUS
 	struct bt_nus_cb nus_clbs = {

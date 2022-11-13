@@ -16,13 +16,6 @@
 #define THREAD_PRIORITY K_PRIO_COOP(CONFIG_NUM_COOP_PRIORITIES - 1)
 #endif
 
-#define UDP_TRANSMISSION_PERIOD_MSEC 60000
-#define UDP_TRANSMISSION_PERIOD_TAG_MSEC 1000
-#define UDP_TRANSMISSION_BYTES 40
-
-#define UID_CHARS 12
-#define SESSION_RAND_CHARS 4
-
 struct data
 {
 	const char *proto;
@@ -44,8 +37,8 @@ struct configs
 #define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 #endif
 
-extern char lorem_ipsum[];
-extern const int ipsum_len;
+extern int32_t packet_buffer[];
+extern const int packet_len;
 extern struct configs conf;
 
 int start_udp(void);

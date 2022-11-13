@@ -13,6 +13,11 @@
 	chosen {
 		zephyr,entropy = &rng;
 	};
+
+	aliases {
+		rnb-tx-led = &led0;
+		rnb-rx-led = &led1;
+	};
 };
 &adc {
 	status = "disabled";

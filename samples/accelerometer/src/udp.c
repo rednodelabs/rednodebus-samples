@@ -8,7 +8,7 @@
  */
 
 #include <logging/log.h>
-LOG_MODULE_DECLARE(net_socket_test_sample, LOG_LEVEL_DBG);
+LOG_MODULE_DECLARE(net_accelerometer_sample, LOG_LEVEL_DBG);
 
 #include <zephyr.h>
 #include <errno.h>
@@ -25,16 +25,15 @@ int send_udp_data(struct data *data)
 	int ret;
 	static int packets_sent;
 
-	memcpy(&lorem_ipsum[UID_CHARS + SESSION_RAND_CHARS], &packets_sent, sizeof(packets_sent));
+	packet_buffer[3] = packets_sent;
 
 	do
 	{
-		// data->udp.transmitting = sys_rand32_get() % ipsum_len;
-		data->udp.transmitting = UDP_TRANSMISSION_BYTES % ipsum_len;
+		data->udp.transmitting = packet_len;
 	} while (data->udp.transmitting == 0U ||
 		 data->udp.transmitting > data->udp.mtu);
 
-	ret = send(data->udp.sock, lorem_ipsum, data->udp.transmitting, 0);
+	ret = send(data->udp.sock, packet_buffer, data->udp.transmitting, 0);
 
 	LOG_DBG("%s UDP: Sent %d bytes", data->proto, data->udp.transmitting);
 

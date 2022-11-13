@@ -37,9 +37,9 @@ K_APPMEM_PARTITION_DEFINE(app_partition);
 struct k_mem_domain app_domain;
 #endif
 
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 #include "rnb_utils.h"
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 #include "common.h"
 #include "ca_certificate.h"
@@ -316,7 +316,7 @@ static int start_client(void)
 
 void main(void)
 {
-#if defined(CONFIG_REDNODEBUS)
+#ifdef CONFIG_REDNODEBUS
 	init_rnb();
 
 	while (!is_rnb_connected())
@@ -325,7 +325,7 @@ void main(void)
 	}
 
 	k_sleep(K_MSEC(1000));
-#endif
+#endif /* CONFIG_REDNODEBUS */
 
 	init_app();
 

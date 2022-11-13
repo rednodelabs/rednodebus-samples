@@ -16,5 +16,8 @@ endif()
 
 target_sources(app PRIVATE src/main.c)
 target_include_directories(app PUBLIC ../../include)
-target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC ../common/src)
-target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE ../common/src/rnb_utils.c)
+target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
+  ../common/src)
+target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
+  ../common/src/rnb_utils.c
+  ../common/src/rnb_leds.c)

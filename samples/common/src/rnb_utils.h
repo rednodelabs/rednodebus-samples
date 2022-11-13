@@ -13,18 +13,11 @@
 #ifndef __RNB_UTILS_H__
 #define __RNB_UTILS_H__
 
-#if defined(CONFIG_REDNODEBUS)
-
-#define REDNODEBUS_UTILS_STACK_SIZE 512
-#define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8
-#define REDNODEBUS_UTILS_THREAD_PRIORITY 3
-#define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
-
 int init_rnb(void);
 bool is_rnb_connected(void);
 void rnb_utils_get_euid(uint64_t *euid);
-
-#endif
+void rnb_utils_start();
+void rnb_utils_stop();
 
 #endif
 

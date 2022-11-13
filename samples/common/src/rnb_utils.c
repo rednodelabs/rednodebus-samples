@@ -16,8 +16,14 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include <net/ieee802154_radio.h>
 #include <net/openthread.h>
 #include <openthread/platform/radio.h>
+#include <openthread/ip6.h>
 
-#include "rnb_utils.h"
+#include "rnb_leds.h"
+
+#define REDNODEBUS_UTILS_STACK_SIZE 512
+#define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8
+#define REDNODEBUS_UTILS_THREAD_PRIORITY 3
+#define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
 
 /* Convenience defines for RADIO */
 #define REDNODEBUS_API(dev) ((const struct ieee802154_radio_api *const)(dev)->api)
@@ -56,6 +62,9 @@ static void print_rnb_ranging_mode(const uint8_t ranging_mode);
 static void handle_rnb_user_event(const struct device *dev,
 				  enum rednodebus_user_event evt,
 				  void *event_params);
+static void handle_rnb_user_rxtx_signal(const struct device *dev,
+					enum rednodebus_user_rxtx_signal sig,
+					bool active);
 static void process_rnb_utils_event(const struct device *dev,
 				    const enum rednodebus_user_event event,
 				    const struct rednodebus_user_event_params *params);
@@ -100,6 +109,16 @@ void rnb_utils_get_euid(uint64_t *euid)
 	memcpy(euid, &my_euid, REDNODEBUS_UTILS_EUID_BYTE_LENGTH);
 }
 
+void rnb_utils_stop()
+{
+	otIp6SetEnabled(openthread_get_default_context()->instance, false);
+}
+
+void rnb_utils_start()
+{
+	otIp6SetEnabled(openthread_get_default_context()->instance, true);
+	k_work_schedule(&ot_start_work, K_SECONDS(1));
+}
 
 static void print_rnb_state(const uint8_t state)
 {
@@ -227,6 +246,23 @@ static void handle_rnb_user_event(const struct device *dev,
 	LOG_ERR("Not enough events allocated for rnb user event %u", evt);
 }
 
+static void handle_rnb_user_rxtx_signal(const struct device *dev,
+					enum rednodebus_user_rxtx_signal sig,
+					bool active)
+{
+	switch (sig)
+	{
+	case REDNODEBUS_USER_RX_SIGNAL:
+		rnb_leds_set_rx(active);
+		break;
+	case REDNODEBUS_USER_TX_SIGNAL:
+		rnb_leds_set_tx(active);
+		break;
+	default:
+		break;
+	}
+}
+
 static void process_rnb_utils_event(const struct device *dev,
 				    const enum rednodebus_user_event event,
 				    const struct rednodebus_user_event_params *params)
@@ -323,9 +359,25 @@ static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
 	}
 }
 
+bool is_rnb_connected(void)
+{
+	return rnb_connected;
+}
+
 int init_rnb(void)
 {
+	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
 	uint64_t euid = 0;
+	struct ieee802154_config ieee802154_config;
+	int ret;
+
+	ret = rnb_leds_init();
+
+	if (ret != 0)
+	{
+		LOG_WRN("Cannot init RedNodeBus LEDs");
+	}
+
 	rnb_utils_get_euid(&euid);
 
 	LOG_INF("EUID 0x%04X%04X", (uint32_t)(euid >> 32), (uint32_t)euid);
@@ -362,16 +414,11 @@ int init_rnb(void)
 
 	k_work_init_delayable(&ot_start_work, ot_start_work_handler);
 
-	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
-	struct ieee802154_config ieee802154_config;
-
 	ieee802154_config.rnb_user_event_handler = handle_rnb_user_event;
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);
 
-	return 0;
-}
+	ieee802154_config.rnb_user_rxtx_signal_handler = handle_rnb_user_rxtx_signal;
+	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_RXTX_SIGNAL_HANDLER, &ieee802154_config);
 
-bool is_rnb_connected(void)
-{
-	return rnb_connected;
+	return 0;
 }

@@ -38,7 +38,7 @@ west build -p -b nrf52840dongle_nrf52840 samples/socket_test -- -DOVERLAY_CONFIG
 ### Testing the Socket Test
 To test the echo client, the `socket_test.py` file located in the `script` folder can be used.
 
-Using the `socket_test.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the echo service can be tested.
+Using the `socket_test.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the socket service can be tested.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the `socket_test.py` can be specified in the `common.h` file:
 ```
