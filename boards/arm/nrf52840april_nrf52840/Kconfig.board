@@ -1,0 +1,8 @@
+# nRF52840 April NRF52840 board configuration
+
+# Copyright (c) 2022 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_NRF52840APRIL_NRF52840
+	bool "nRF52840 APRIL NRF52840"
+	depends on SOC_NRF52840_QIAA

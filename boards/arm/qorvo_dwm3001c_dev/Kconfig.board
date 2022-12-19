@@ -1,0 +1,8 @@
+# Qorvo DWM3001C board configuration
+
+# Copyright (c) 2022 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_QORVO_DWM3001C_DEV
+	bool "Qorvo DWM3001C-DEV"
+	depends on SOC_NRF52833_QIAA

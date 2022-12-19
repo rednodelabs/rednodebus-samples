@@ -2,11 +2,14 @@ sample:
   name: OpenThreadThread CoAP Client RedNodeBus
   description: Test CoAP communication in Thread RedNodebus network
 tests:
-  samples.openthread.coap_client.rnb:
+  samples.coap_client.rnb:
     build_only: true
-    platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev
+    platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev insightsip_isp3010_dev nrf52840dk_nrf52840 nrf52840dongle_nrf52840
     tags: ci_build
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
     integration_platforms:
       - decawave_dwm1001_dev
+      - qorvo_dwm3001c_dev
       - insightsip_isp3010_dev
+      - nrf52840dk_nrf52840
+      - nrf52840dongle_nrf52840

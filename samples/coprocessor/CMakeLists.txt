@@ -1,34 +1,28 @@
-#
-# Copyright (c) 2020 Nordic Semiconductor ASA
-#
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
-#
+# SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.20.0)
 
 set(OT_NCP_VENDOR_HOOK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-string(REPLACE " " ";" OVERLAY_CONFIG_LIST ${OVERLAY_CONFIG})
+list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
-include(../common/CMakeLists.txt)
+string(REPLACE " " ";" OVERLAY_CONFIG_LIST "${OVERLAY_CONFIG}")
+if("overlay-ot-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
+endif()
 
 include(CheckGit.cmake)
 CheckCoprocessorGitSetup()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(openthread_coprocessor)
+project(coprocessor)
 
-if("overlay-rcp-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
-target_compile_definitions_ifdef(CONFIG_NET_L2_OPENTHREAD ot-config INTERFACE "OPENTHREAD_CONFIG_CHILD_SUPERVISION_MSG_NO_ACK_REQUEST=1")
-endif()
-
-
-# NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c src/nrf_802154_radio_wrapper.c ${CMAKE_BINARY_DIR}/generated/rnb_coprocessor_version.c)
-target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
-  ../common/src)
-target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
-  ../common/src/rnb_leds.c)
 
-target_include_directories(app PUBLIC ../../include)
-# NORDIC SDK APP END
+target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
+target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c)
+
+target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)

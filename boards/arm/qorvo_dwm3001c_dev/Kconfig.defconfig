@@ -1,0 +1,30 @@
+# Qorvo DWM3001C board configuration
+
+# Copyright (c) 2022 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_QORVO_DWM3001C_DEV
+
+config BOARD
+	default "qorvo_dwm3001c_dev"
+
+config BT_CTLR
+	default BT
+
+config I2C
+	default SENSOR
+
+config SPI
+	default y
+	depends on IEEE802154
+
+config IEEE802154_DW3000
+	bool "Enables DW3000 board"
+	default y
+	depends on IEEE802154
+
+config NET_CONFIG_IEEE802154_DEV_NAME
+	default IEEE802154_NRF5_DRV_NAME if REDNODEBUS
+	default "DW3000"
+
+endif # BOARD_QORVO_DWM3001C_DEV

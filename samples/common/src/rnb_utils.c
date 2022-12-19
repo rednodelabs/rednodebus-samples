@@ -17,6 +17,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include <net/openthread.h>
 #include <openthread/platform/radio.h>
 #include <openthread/ip6.h>
+#include <openthread/thread.h>
 
 #include "rnb_leds.h"
 
@@ -47,13 +48,16 @@ static struct k_thread rnb_utils_thread;
 static struct k_fifo rnb_utils_event_fifo;
 
 /* RedNodeBus OT start work. */
-struct k_work_delayable ot_start_work;
+struct k_work ot_init_work;
+struct k_work ot_start_work;
+struct k_work ot_stop_work;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
 static bool rnb_configured;
 static struct rednodebus_user_config rnb_user_config;
 static struct rednodebus_user_runtime_config rnb_user_runtime_config;
 static bool rnb_connected;
+static bool ot_started;
 
 static void print_rnb_state(const uint8_t state);
 static void print_rnb_role(const uint8_t role);
@@ -69,13 +73,15 @@ static void process_rnb_utils_event(const struct device *dev,
 				    const enum rednodebus_user_event event,
 				    const struct rednodebus_user_event_params *params);
 static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
+static void ot_init_work_handler(struct k_work *item);
 static void ot_start_work_handler(struct k_work *item);
+static void ot_stop_work_handler(struct k_work *item);
 
-static void ot_start_work_handler(struct k_work *item)
+static void ot_init_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	openthread_start(openthread_get_default_context());
+	otIp6SetEnabled(openthread_get_default_context()->instance, true);
 
 #if defined(CONFIG_SOC_NRF52840)
 	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
@@ -84,6 +90,24 @@ static void ot_start_work_handler(struct k_work *item)
 	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
 	otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 4); // +4 dBm
 #endif
+}
+
+static void ot_start_work_handler(struct k_work *item)
+{
+	ARG_UNUSED(item);
+
+	openthread_start(openthread_get_default_context());
+
+	ot_started = true;
+}
+
+static void ot_stop_work_handler(struct k_work *item)
+{
+	ARG_UNUSED(item);
+
+	otThreadSetEnabled(openthread_get_default_context()->instance, false);
+
+	ot_started = false;
 }
 
 __WEAK void rnb_utils_handle_new_state(const struct rednodebus_user_event_state *event_state)
@@ -111,13 +135,16 @@ void rnb_utils_get_euid(uint64_t *euid)
 
 void rnb_utils_stop()
 {
+	otThreadSetEnabled(openthread_get_default_context()->instance, false);
+
 	otIp6SetEnabled(openthread_get_default_context()->instance, false);
+
+	ot_started = false;
 }
 
 void rnb_utils_start()
 {
-	otIp6SetEnabled(openthread_get_default_context()->instance, true);
-	k_work_schedule(&ot_start_work, K_SECONDS(1));
+	k_work_submit(&ot_start_work);
 }
 
 static void print_rnb_state(const uint8_t state)
@@ -125,8 +152,6 @@ static void print_rnb_state(const uint8_t state)
 	switch (state)
 	{
 	case REDNODEBUS_USER_BUS_STATE_CONNECTED:
-		rnb_connected = true;
-
 		LOG_INF("RNB state: CONNECTED");
 		break;
 	case REDNODEBUS_USER_BUS_STATE_SYNCHRONIZED:
@@ -136,8 +161,6 @@ static void print_rnb_state(const uint8_t state)
 		LOG_INF("RNB state: UNSYNCHRONIZED");
 		break;
 	case REDNODEBUS_USER_BUS_STATE_STOPPED:
-		rnb_connected = false;
-
 		LOG_INF("RNB state: STOPPED");
 		break;
 	default:
@@ -314,7 +337,7 @@ static void process_rnb_utils_event(const struct device *dev,
 
 				rnb_configured = true;
 
-				k_work_schedule(&ot_start_work, K_SECONDS(1));
+				k_work_submit(&ot_init_work);
 			}
 			else
 			{
@@ -322,6 +345,25 @@ static void process_rnb_utils_event(const struct device *dev,
 				// struct rednodebus_user_settings rnb_user_settings;
 				// rnb_user_settings.rnb_id = 0;
 				// ret = REDNODEBUS_API(dev)->set_rnb_user_settings(dev, &rnb_user_settings);
+			}
+		}
+
+		if (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED)
+		{
+			rnb_connected = true;
+
+			if (!ot_started)
+			{
+				k_work_submit(&ot_start_work);
+			}
+		}
+		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
+		{
+			rnb_connected = false;
+
+			if (ot_started)
+			{
+				k_work_submit(&ot_stop_work);
 			}
 		}
 
@@ -384,6 +426,7 @@ int init_rnb(void)
 
 	rnb_configured = false;
 	rnb_connected = false;
+	ot_started = false;
 
 	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
 	rnb_user_config.sync_active_period_ms = 2000;
@@ -412,7 +455,9 @@ int init_rnb(void)
 
 	k_thread_name_set(&rnb_utils_thread, "rnb_utils_thread");
 
-	k_work_init_delayable(&ot_start_work, ot_start_work_handler);
+	k_work_init(&ot_init_work, ot_init_work_handler);
+	k_work_init(&ot_start_work, ot_start_work_handler);
+	k_work_init(&ot_stop_work, ot_stop_work_handler);
 
 	ieee802154_config.rnb_user_event_handler = handle_rnb_user_event;
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_EVENT_HANDLER, &ieee802154_config);

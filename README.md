@@ -7,7 +7,7 @@ This repository includes a list of samples integrating OpenThread with the RedNo
 ## Prerequisites
 Read the [Zephyr’s Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html) to prepare your environment with the required tools and dependencies.
 
-The [Zephyr SDK](https://github.com/zephyrproject-rtos/sdk-ng) version used for these samples is `0.14.2`.
+The [Zephyr SDK](https://github.com/zephyrproject-rtos/sdk-ng) version used for these samples is `0.15.2`.
 
 Remember to set the required environment variables:
 ```
@@ -30,9 +30,9 @@ west update
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
 ## RNB Lib
-The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EagqIY9I2jdHgHfCq_X6SywBk6kypachy1yygFSmYvbN1A?e=7rn8Dm).
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EVdIIvr2xPhOuW6Um5m6NfEBySMIM3ZZPjGyQ8J50eUucA?e=HRdwOT).
 
-To test the system, flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md)or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+To test the system, flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
 ## RedNodeBus + OpenThread Border Router (RNB OTBR)
 
@@ -137,6 +137,8 @@ docker compose down
 On the Raspberry Pi running the docker containers, open a browser and go to `127.0.0.1:3000` to acces the web UI.
 
 > The web UI can be accessed from a different machine in the same local network as the Raspberry Pi, e.g. entering `raspberrypi:3000`, to avoid the load of the graphical interface in the Pi.
+
+The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/log/syslog`.
 
 ### MQTT API
 

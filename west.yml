@@ -1,5 +1,5 @@
 manifest:
-  version: '0.10'
+  version: '0.12'
   remotes:
   - name: rnl
     url-base: https://github.com/rednodelabs
@@ -10,43 +10,50 @@ manifest:
   projects:
   - name: nrf
     repo-path: sdk-nrf
+    revision: v2.1.0
     remote: ncs
-    revision: v1.8.0
     import:
       name-blocklist:
       - zephyr
       - openthread
   - name: zephyr
-    revision: nrfconnect/v0.9.16
+    revision: rednodelabs/v1.0.0
     import:
       name-allowlist:
+      - TraceRecorderSource
       - canopennode
-      - civetweb
+      - chre
       - cmsis
       - edtt
       - fatfs
+      - fff
       - hal_nordic
       - hal_st
+      - liblc3codec
       - libmetal
       - littlefs
       - loramac-node
       - lvgl
       - lz4
       - mbedtls
-      - mcumgr
       - mipi-sys-t
       - nanopb
       - net-tools
       - nrf_hw_models
       - open-amp
+      - picolibc
+      - psa-arch-tests
       - segger
       - tinycbor
       - tinycrypt
-      - TraceRecorderSource
+      - tf-m-tests
+      - zcbor
+      - zscilib
   - name: openthread
-    revision: zephyrproject-rtos/v0.9.14
     path: modules/lib/openthread
+    revision: rednodelabs/v1.0.0
   - name: rednodebus-release
-    revision: v0.9.16
+    revision: v1.0.0
   self:
     path: rednodebus-samples
+    west-commands: nrf/scripts/west-commands.yml

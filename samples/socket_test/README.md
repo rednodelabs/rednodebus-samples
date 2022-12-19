@@ -1,41 +1,34 @@
-## Socket Test
+# Socket Test
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket.
 
 This sample has been developed to be used with the following boards:
 
 ### decawave_dwm1001_dev board
 ```
-west build -p -b decawave_dwm1001_dev samples/socket_test -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b decawave_dwm1001_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
+
+### qorvo_dwm3001c_dev board
 ```
-nrfjprog -e
-west flash
+west build -p -b qorvo_dwm3001c_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### insightsip_isp3010_dev board
 ```
-west build -p -b insightsip_isp3010_dev samples/socket_test -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
+west build -p -b insightsip_isp3010_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### nrf52840dk_nrf52840 board
 ```
-west build -p -b nrf52840dk_nrf52840 samples/socket_test -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
+west build -p -b nrf52840dk_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### nrf52840dongle_nrf52840 board
 ```
-west build -p -b nrf52840dongle_nrf52840 samples/socket_test -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b nrf52840dongle_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
-### Testing the Socket Test
+## Testing the Socket Test
 To test the echo client, the `socket_test.py` file located in the `script` folder can be used.
 
 Using the `socket_test.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the socket service can be tested.

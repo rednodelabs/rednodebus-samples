@@ -98,6 +98,7 @@ static void on_ot_disconnect(struct k_work *item)
 
 static void on_mtd_mode_toggle(uint32_t med)
 {
+/*
 #if IS_ENABLED(CONFIG_PM_DEVICE)
 	const struct device *cons = device_get_binding(CONSOLE_LABEL);
 
@@ -107,7 +108,8 @@ static void on_mtd_mode_toggle(uint32_t med)
 		pm_device_state_set(cons, PM_DEVICE_STATE_SUSPENDED);
 	}
 #endif
-	//dk_set_led(MTD_SED_LED, med);
+	dk_set_led(MTD_SED_LED, med);
+*/
 }
 
 static void on_button_changed(uint32_t button_state, uint32_t has_changed)

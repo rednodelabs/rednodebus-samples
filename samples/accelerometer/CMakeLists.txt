@@ -2,32 +2,27 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-string(REPLACE " " ";" OVERLAY_CONFIG_LIST ${OVERLAY_CONFIG})
+list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+
+string(REPLACE " " ";" OVERLAY_CONFIG_LIST "${OVERLAY_CONFIG}")
 if("overlay-ot-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
-include(../common/CMakeLists.txt)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 endif()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(accelerometer)
 
-if("overlay-ot-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
-target_compile_definitions_ifdef(CONFIG_NET_L2_OPENTHREAD ot-config INTERFACE "OPENTHREAD_CONFIG_CHILD_SUPERVISION_MSG_NO_ACK_REQUEST=1")
-endif()
-
-# APP START
 target_sources(app PRIVATE src/accelerometer.c)
 
-target_include_directories(app PUBLIC ../../include)
+target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 
 target_sources_ifdef(CONFIG_NET_UDP app PRIVATE src/udp.c)
 
 target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC ../common/src)
 target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
-  ../common/src/rnb_utils.c
-  ../common/src/rnb_leds.c)
-  # APP END
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_utils.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c)
 
 include(${ZEPHYR_BASE}/samples/net/common/common.cmake)
-
-set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated/)

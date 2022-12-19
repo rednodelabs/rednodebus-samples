@@ -25,7 +25,6 @@ LOG_MODULE_REGISTER(net_echo_client_sample, LOG_LEVEL_DBG);
 #include <stdio.h>
 
 #include <net/socket.h>
-#include <net/tls_credentials.h>
 
 #include <net/net_mgmt.h>
 #include <net/net_event.h>
@@ -42,7 +41,6 @@ struct k_mem_domain app_domain;
 #endif /* CONFIG_REDNODEBUS */
 
 #include "common.h"
-#include "ca_certificate.h"
 
 #define APP_BANNER "Run echo client"
 
@@ -81,16 +79,11 @@ const char lorem_ipsum[] =
 const int ipsum_len = sizeof(lorem_ipsum) - 1;
 
 APP_DMEM struct configs conf = {
-	.ipv4 = {
-		.proto = "IPv4",
-		.udp.sock = INVALID_SOCK,
-		.tcp.sock = INVALID_SOCK,
-	},
 	.ipv6 = {
 		.proto = "IPv6",
 		.udp.sock = INVALID_SOCK,
 		.tcp.sock = INVALID_SOCK,
-	},
+	}
 };
 
 static APP_BMEM struct pollfd fds[4];
@@ -105,18 +98,6 @@ static struct net_mgmt_event_callback mgmt_cb;
 
 static void prepare_fds(void)
 {
-	if (conf.ipv4.udp.sock >= 0) {
-		fds[nfds].fd = conf.ipv4.udp.sock;
-		fds[nfds].events = POLLIN;
-		nfds++;
-	}
-
-	if (conf.ipv4.tcp.sock >= 0) {
-		fds[nfds].fd = conf.ipv4.tcp.sock;
-		fds[nfds].events = POLLIN;
-		nfds++;
-	}
-
 	if (conf.ipv6.udp.sock >= 0) {
 		fds[nfds].fd = conf.ipv6.udp.sock;
 		fds[nfds].events = POLLIN;
@@ -146,13 +127,6 @@ static int start_udp_and_tcp(void)
 
 	LOG_INF("Starting...");
 
-	if (IS_ENABLED(CONFIG_NET_TCP)) {
-		ret = start_tcp();
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
 	if (IS_ENABLED(CONFIG_NET_UDP)) {
 		ret = start_udp();
 		if (ret < 0) {
@@ -171,13 +145,6 @@ static int run_udp_and_tcp(void)
 
 	wait();
 
-	if (IS_ENABLED(CONFIG_NET_TCP)) {
-		ret = process_tcp();
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
 	if (IS_ENABLED(CONFIG_NET_UDP)) {
 		ret = process_udp();
 		if (ret < 0) {
@@ -195,10 +162,6 @@ static void stop_udp_and_tcp(void)
 	if (IS_ENABLED(CONFIG_NET_UDP)) {
 		stop_udp();
 	}
-
-	if (IS_ENABLED(CONFIG_NET_TCP)) {
-		stop_tcp();
-	}
 }
 
 #if defined(CONFIG_NET_CONNECTION_MANAGER)
@@ -213,8 +176,7 @@ static void event_handler(struct net_mgmt_event_callback *cb,
 		LOG_INF("Network connected");
 
 		connected = true;
-		conf.ipv4.udp.mtu = net_if_get_mtu(iface);
-		conf.ipv6.udp.mtu = conf.ipv4.udp.mtu;
+		conf.ipv6.udp.mtu = net_if_get_mtu(iface);
 		k_sem_give(&run_app);
 
 		return;
@@ -246,33 +208,6 @@ static void init_app(void)
 	k_mem_domain_init(&app_domain, ARRAY_SIZE(parts), parts);
 #endif
 
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	int err = tls_credential_add(CA_CERTIFICATE_TAG,
-				    TLS_CREDENTIAL_CA_CERTIFICATE,
-				    ca_certificate,
-				    sizeof(ca_certificate));
-	if (err < 0) {
-		LOG_ERR("Failed to register public certificate: %d", err);
-	}
-#endif
-
-#if defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
-	err = tls_credential_add(PSK_TAG,
-				TLS_CREDENTIAL_PSK,
-				psk,
-				sizeof(psk));
-	if (err < 0) {
-		LOG_ERR("Failed to register PSK: %d", err);
-	}
-	err = tls_credential_add(PSK_TAG,
-				TLS_CREDENTIAL_PSK_ID,
-				psk_id,
-				sizeof(psk_id) - 1);
-	if (err < 0) {
-		LOG_ERR("Failed to register PSK ID: %d", err);
-	}
-#endif
-
 	if (IS_ENABLED(CONFIG_NET_CONNECTION_MANAGER)) {
 		net_mgmt_init_event_callback(&mgmt_cb,
 					     event_handler, EVENT_MASK);
@@ -286,7 +221,7 @@ static void init_app(void)
 
 static int start_client(void)
 {
-	int iterations = CONFIG_NET_SAMPLE_SEND_ITERATIONS;
+	int iterations = 0;
 	int i = 0;
 	int ret;
 
@@ -330,7 +265,6 @@ void main(void)
 	init_app();
 
 	if (!IS_ENABLED(CONFIG_NET_CONNECTION_MANAGER)) {
-		conf.ipv4.udp.mtu = MTU_SIZE;
 		conf.ipv6.udp.mtu = MTU_SIZE;
 
 		connected = true;

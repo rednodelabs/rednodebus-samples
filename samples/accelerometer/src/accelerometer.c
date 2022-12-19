@@ -95,27 +95,24 @@ static void fetch_and_display(const struct device *sensor)
 					accel);
 	}
 
-	// Data accelerometer to packet_buffer
-	packet_buffer[4] = accel[0].val1;
-	packet_buffer[5] = accel[0].val2;
-	packet_buffer[6] = accel[1].val1;
-	packet_buffer[7] = accel[1].val2;
-	packet_buffer[8] = accel[2].val1;
-	packet_buffer[9] = accel[2].val2;
-
 	if (rc < 0)
 	{
 		LOG_INF("ERROR: Accelerometer data failed: %d\n", rc);
 	}
 	else
 	{
+		packet_buffer[4] = accel[0].val1;
+		packet_buffer[5] = accel[0].val2;
+		packet_buffer[6] = accel[1].val1;
+		packet_buffer[7] = accel[1].val2;
+		packet_buffer[8] = accel[2].val1;
+		packet_buffer[9] = accel[2].val2;
+
 		send_udp_data(&conf.ipv6);
 
 		LOG_DBG("#%u EUID 0x%04X%04X @ %u ms; %sx_acc: %d, y_acc: %0d, z_acc: %d\n",
-			count, packet_buffer[0], packet_buffer[1], k_uptime_get_32(), overrun,
-			packet_buffer[4],
-			packet_buffer[6],
-			packet_buffer[8]);
+			count, packet_buffer[1], packet_buffer[0], k_uptime_get_32(), overrun,
+			packet_buffer[4], packet_buffer[6], packet_buffer[8]);
 	}
 }
 

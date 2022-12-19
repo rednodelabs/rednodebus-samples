@@ -1,12 +1,24 @@
 sample:
-  name: Node RedNodeBus
-  description: Test Node RedNodeBus
+  name: RedNodeBus Node
+  description: Test RedNodeBus Node
 tests:
-  samples.rednodebus_node:
-      build_only: true
-      platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev nrf52840dongle_nrf52840
-      tags: ci_build
-      extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
-      integration_platforms:
-        - decawave_dwm1001_dev
-        - insightsip_isp3010_dev
+  samples.rednodebus_node.rnb:
+    build_only: true
+    platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev insightsip_isp3010_dev nrf52840dk_nrf52840 nrf52840dongle_nrf52840
+    tags: ci_build
+    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
+    integration_platforms:
+      - decawave_dwm1001_dev
+      - qorvo_dwm3001c_dev
+      - insightsip_isp3010_dev
+      - nrf52840dk_nrf52840
+      - nrf52840dongle_nrf52840
+  samples.rednodebus_node.rnb.ranging_diag:
+    build_only: true
+    platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev insightsip_isp3010_dev
+    tags: ci_build
+    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
+    integration_platforms:
+      - decawave_dwm1001_dev
+      - qorvo_dwm3001c_dev
+      - insightsip_isp3010_dev

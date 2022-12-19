@@ -15,11 +15,9 @@ LOG_MODULE_DECLARE(net_echo_client_sample, LOG_LEVEL_DBG);
 #include <stdio.h>
 
 #include <net/socket.h>
-#include <net/tls_credentials.h>
 #include <random/rand32.h>
 
 #include "common.h"
-#include "ca_certificate.h"
 
 #define RECV_BUF_SIZE 1280
 #define UDP_SLEEP K_MSEC(150)
@@ -86,41 +84,13 @@ static int start_udp_proto(struct data *data, struct sockaddr *addr,
 	k_work_init_delayable(&data->udp.recv, wait_reply);
 	k_work_init_delayable(&data->udp.transmit, wait_transmit);
 
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	data->udp.sock = socket(addr->sa_family, SOCK_DGRAM, IPPROTO_DTLS_1_2);
-#else
 	data->udp.sock = socket(addr->sa_family, SOCK_DGRAM, IPPROTO_UDP);
-#endif
+
 	if (data->udp.sock < 0) {
 		LOG_ERR("Failed to create UDP socket (%s): %d", data->proto,
 			errno);
 		return -errno;
 	}
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	sec_tag_t sec_tag_list[] = {
-		CA_CERTIFICATE_TAG,
-#if defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
-		PSK_TAG,
-#endif
-	};
-
-	ret = setsockopt(data->udp.sock, SOL_TLS, TLS_SEC_TAG_LIST,
-			 sec_tag_list, sizeof(sec_tag_list));
-	if (ret < 0) {
-		LOG_ERR("Failed to set TLS_SEC_TAG_LIST option (%s): %d",
-			data->proto, errno);
-		ret = -errno;
-	}
-
-	ret = setsockopt(data->udp.sock, SOL_TLS, TLS_HOSTNAME,
-			 TLS_PEER_HOSTNAME, sizeof(TLS_PEER_HOSTNAME));
-	if (ret < 0) {
-		LOG_ERR("Failed to set TLS_HOSTNAME option (%s): %d",
-			data->proto, errno);
-		ret = -errno;
-	}
-#endif
 
 	/* Call connect so we can use send and recv. */
 	ret = connect(data->udp.sock, addr, addrlen);
@@ -184,7 +154,6 @@ static int process_udp_proto(struct data *data)
 int start_udp(void)
 {
 	int ret = 0;
-	struct sockaddr_in addr4;
 	struct sockaddr_in6 addr6;
 
 	if (IS_ENABLED(CONFIG_NET_IPV6)) {
@@ -200,28 +169,11 @@ int start_udp(void)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		addr4.sin_family = AF_INET;
-		addr4.sin_port = htons(PEER_PORT);
-		inet_pton(AF_INET, CONFIG_NET_CONFIG_PEER_IPV4_ADDR,
-			  &addr4.sin_addr);
-
-		ret = start_udp_proto(&conf.ipv4, (struct sockaddr *)&addr4,
-				      sizeof(addr4));
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
 	if (IS_ENABLED(CONFIG_NET_IPV6)) {
 		ret = send_udp_data(&conf.ipv6);
 		if (ret < 0) {
 			return ret;
 		}
-	}
-
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		ret = send_udp_data(&conf.ipv4);
 	}
 
 	return ret;
@@ -238,13 +190,6 @@ int process_udp(void)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		ret = process_udp_proto(&conf.ipv4);
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
 	return ret;
 }
 
@@ -256,15 +201,6 @@ void stop_udp(void)
 
 		if (conf.ipv6.udp.sock >= 0) {
 			(void)close(conf.ipv6.udp.sock);
-		}
-	}
-
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		k_work_cancel_delayable(&conf.ipv4.udp.recv);
-		k_work_cancel_delayable(&conf.ipv4.udp.transmit);
-
-		if (conf.ipv4.udp.sock >= 0) {
-			(void)close(conf.ipv4.udp.sock);
 		}
 	}
 }

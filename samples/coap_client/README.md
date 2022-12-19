@@ -1,42 +1,34 @@
-## CoAP Client
+# CoAP Client
 Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a CoAP client.
 
 This sample has been developed to be used with the following boards:
 
 ### decawave_dwm1001_dev board
 ```
-west build -p -b decawave_dwm1001_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b decawave_dwm1001_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
+
+### qorvo_dwm3001c_dev board
 ```
-nrfjprog -e
-west flash
+west build -p -b qorvo_dwm3001c_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### insightsip_isp3010_dev board
 ```
-west build -p -b insightsip_isp3010_dev samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
+west build -p -b insightsip_isp3010_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### nrf52840dk_nrf52840 board
 ```
-west build -p -b nrf52840dk_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
-```
-nrfjprog -e
-west flash
+west build -p -b nrf52840dk_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ### nrf52840dongle_nrf52840 board
 ```
-west build -p -b nrf52840dongle_nrf52840 samples/coap_client -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b nrf52840dongle_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
-
-### Testing the CoAP Client
+## Testing the CoAP Client
 To test the CoAP client, the `coap_server.py` file located in the `script` folder can be used.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified in the coap_clients_util.c file:

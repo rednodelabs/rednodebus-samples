@@ -8,6 +8,10 @@
 	status = "okay";
 	hw-flow-control;
 	interrupts = <2 4>;
+	// tx-pin = <6>;
+	// rx-pin = <8>;
+	// rts-pin = <5>;
+	// cts-pin = <7>;
 };
 
 &uart1 {

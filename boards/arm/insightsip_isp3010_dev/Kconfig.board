@@ -1,0 +1,8 @@
+# Insightsip ISP3010 DEV board configuration
+
+# Copyright (c) 2022 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_INSIGHTSIP_ISP3010_DEV
+	bool "Insightsip ISP3010-DEV"
+	depends on SOC_NRF52832_QFAA

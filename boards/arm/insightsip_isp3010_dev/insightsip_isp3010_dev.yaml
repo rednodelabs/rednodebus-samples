@@ -1,0 +1,14 @@
+identifier: insightsip_isp3010_dev
+name: Insightsip-ISP3010-DEV
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 64
+flash: 512
+supported:
+  - spi
+  - i2c
+  - ieee802154

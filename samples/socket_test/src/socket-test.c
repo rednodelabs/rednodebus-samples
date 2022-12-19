@@ -95,7 +95,7 @@ static void init_app(void)
 
 static int start_client(void)
 {
-	int iterations = CONFIG_NET_SAMPLE_SEND_ITERATIONS;
+	int iterations = 0;
 	int i = 0;
 	int ret;
 
