@@ -17,7 +17,7 @@ manifest:
       - zephyr
       - openthread
   - name: zephyr
-    revision: rednodelabs/v1.0.0
+    revision: rednodelabs/v1.0.1
     import:
       name-allowlist:
       - TraceRecorderSource
@@ -53,7 +53,7 @@ manifest:
     path: modules/lib/openthread
     revision: rednodelabs/v1.0.0
   - name: rednodebus-release
-    revision: v1.0.0
+    revision: v1.0.1
   self:
     path: rednodebus-samples
     west-commands: nrf/scripts/west-commands.yml
