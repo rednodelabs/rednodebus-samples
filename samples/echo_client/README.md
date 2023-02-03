@@ -1,7 +1,6 @@
 # Echo Client
-Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket.
-
-This sample has been developed to be used with the following boards:
+Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket. Compatible with decawave_dwm1001_dev,
+qorvo_dwm3001c_dev, insightsip_isp3010_dev, nrf52833dk_nrf52833, nrf52840dk_nrf52840 and nrf52840dongle_nrf52840.
 
 ### decawave_dwm1001_dev board
 ```

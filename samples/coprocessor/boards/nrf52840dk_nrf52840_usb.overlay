@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2023 RedNodeLabs
+ */
+
+/ {
+	chosen {
+		zephyr,entropy = &rng;
+		zephyr,ot-uart = &cdc_acm_uart0;
+	};
+
+	aliases {
+		rnb-tx-led = &led0;
+		rnb-rx-led = &led1;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};

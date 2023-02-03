@@ -2,9 +2,6 @@ name: Run tests with twister
 
 on:
   push:
-  pull_request_target:
-    branches:
-      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref }}
@@ -44,11 +41,6 @@ jobs:
       #     git remote set-url origin ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-
       - name: Environment Setup
         run: |
           if [ "${{github.event_name}}" = "pull_request_target" ]; then
@@ -90,22 +82,18 @@ jobs:
           aws-access-key-id: ${{ secrets.CCACHE_S3_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.CCACHE_S3_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
-
       - name: ccache stats initial
         run: |
           test -d github/home/.ccache && rm -rf /github/home/.ccache && mv github/home/.ccache /github/home/.ccache
           ccache -M 10G -s
-
       - name: Run Tests with Twister (Push)
         run: |
           export ZEPHYR_BASE=${PWD}/../zephyr
           export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
           ../zephyr/scripts/twister -T samples/${{matrix.sample}} ${TWISTER_COMMON} --board-root boards
-
       - name: ccache stats post
         run: |
           ccache -s
-
       - name: Upload Unit Test Results
         if: always()
         uses: actions/upload-artifact@v3
@@ -124,19 +112,16 @@ jobs:
     runs-on: ubuntu-latest
       # the build-and-test job might be skipped, we don't need to run this job then
     if: success() || failure()
-
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
-
       - name: Merge Test Results
         run: |
           pip3 install junitparser junit2html
           junitparser merge artifacts/*/*/twister.xml junit.xml
           junit2html junit.xml junit.html
-
       - name: Upload Unit Test Results in HTML
         if: always()
         uses: actions/upload-artifact@v3
@@ -145,7 +130,6 @@ jobs:
           if-no-files-found: ignore
           path: |
             junit.html
-
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:

@@ -1,50 +1,61 @@
 sample:
-  name: OpenThread Co-Processor RedNodeBus
-  description: Test OpenThread Co-Processor RedNodeBus
+  name: RNB OT Co-Processor
+  description: RedNodeBus OpenThread Co-Processor
 tests:
-  samples.coprocessor.rnb.usb_dk:
-    build_only: true
-    platform_allow: nrf52840dk_nrf52840
-    tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb.conf
-                DTC_OVERLAY_FILE="./boards/nrf52840dk_usb.overlay"
+  sample.coprocessor.rnb.usb:
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev
     integration_platforms:
+      - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
-  samples.coprocessor.rnb.usb_dk.ranging_diag:
-    build_only: true
-    platform_allow: nrf52840dk_nrf52840
-    tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb.conf;../common/overlay-rnb-ranging-diagnostic.conf
-                DTC_OVERLAY_FILE="./boards/nrf52840dk_usb.overlay"
-    integration_platforms:
-      - nrf52840dk_nrf52840
-  samples.coprocessor.rnb.usb_dongle:
-    build_only: true
-    platform_allow: nrf52840dongle_nrf52840
-    tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb.conf
-                DTC_OVERLAY_FILE="./boards/nrf52840dongle_usb.overlay"
-    integration_platforms:
       - nrf52840dongle_nrf52840
-  samples.coprocessor.rnb.usb_dongle.ranging_diag:
-    build_only: true
-    platform_allow: nrf52840dongle_nrf52840
+      - qorvo_dwm3001c_dev
     tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb.conf;../common/overlay-rnb-ranging-diagnostic.conf
-                DTC_OVERLAY_FILE="./boards/nrf52840dongle_usb.overlay"
+    extra_args: CONF_FILE=prj.conf
+                OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf
+  sample.coprocessor.rnb.ranging_diagnostic.usb:
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev
     integration_platforms:
+      - nrf52833dk_nrf52833
+      - nrf52840dk_nrf52840
       - nrf52840dongle_nrf52840
-  samples.coprocessor.rnb.uart:
-    build_only: true
-    platform_allow: nrf52840dk_nrf52840
+      - qorvo_dwm3001c_dev
     tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf
+    extra_args: CONF_FILE=prj.conf
+                OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
+#  sample.coprocessor.rnb.usb.mcuboot:
+#    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev
+#    integration_platforms:
+#      - nrf52833dk_nrf52833
+#      - nrf52840dk_nrf52840
+#      - nrf52840dongle_nrf52840
+#      - qorvo_dwm3001c_dev
+#    tags: ci_build
+#    extra_args: CONF_FILE=prj_mcuboot.conf
+#                OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf
+#  sample.coprocessor.rnb.ranging_diagnostic.usb.mcuboot:
+#    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev
+#    integration_platforms:
+#      - nrf52833dk_nrf52833
+#      - nrf52840dk_nrf52840
+#      - nrf52840dongle_nrf52840
+#      - qorvo_dwm3001c_dev
+#    tags: ci_build
+#    extra_args: CONF_FILE=prj_mcuboot.conf
+#                OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
+  sample.coprocessor.rnb.uart:
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840
     integration_platforms:
+      - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
-  samples.coprocessor.rnb.uart.ranging_diag:
-    build_only: true
-    platform_allow: nrf52840dk_nrf52840
     tags: ci_build
-    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
-    integration_platforms:
-      - nrf52840dk_nrf52840
+    extra_args: CONF_FILE=prj.conf
+                OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf
+ # sample.coprocessor.rnb.uart.mcuboot:
+ #   platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840
+ #   integration_platforms:
+ #     - nrf52833dk_nrf52833
+ #     - nrf52840dk_nrf52840
+ #   tags: ci_build
+ #   extra_args: CONF_FILE=prj_mcuboot.conf
+ #               OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf
+

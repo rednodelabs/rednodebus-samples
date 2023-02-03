@@ -143,4 +143,4 @@ The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/lo
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EX_PFtej2_lBsVAJyeMG_XIBFQ4_hwrBCuJRwgMOGRqE0g?e=TseCKu).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EdGv-n0aNT5Glp43ALY1OkgBFfxalbSmV6y2VABwifQULw?e=5ndMeu).

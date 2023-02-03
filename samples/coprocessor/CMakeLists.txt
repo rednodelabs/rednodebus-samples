@@ -12,6 +12,10 @@ if("overlay-ot-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 endif()
 
+if("overlay-usb-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
+  list(APPEND DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/boards/${BOARD}_usb.overlay)
+endif()
+
 include(CheckGit.cmake)
 CheckCoprocessorGitSetup()
 

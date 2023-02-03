@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) 2022 RedNodeLabs
+ */
+
+/ {
+	chosen {
+		zephyr,entropy = &rng;
+	};
+
+	aliases {
+		rnb-tx-led = &led0_red;
+		rnb-rx-led = &led1_green;
+	};
+};

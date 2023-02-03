@@ -2,7 +2,7 @@ sample:
   name: Accelerometer
   description: Test sending acceleration values using the UDP client
 tests:
-  samples.accelerometer.rnb:
+  sample.accelerometer.rnb:
     build_only: true
     platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev
     tags: ci_build

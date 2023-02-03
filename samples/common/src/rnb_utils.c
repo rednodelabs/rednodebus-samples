@@ -81,15 +81,21 @@ static void ot_init_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	otIp6SetEnabled(openthread_get_default_context()->instance, true);
+	struct openthread_context *ctx = openthread_get_default_context();
+
+	openthread_api_mutex_lock(ctx);
+
+	otIp6SetEnabled(ctx->instance, true);
 
 #if defined(CONFIG_SOC_NRF52840)
 	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 8); // +8 dBm
+	otPlatRadioSetTransmitPower(ctx->instance, 8); // +8 dBm
 #else
 	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(openthread_get_default_context()->instance, 4); // +4 dBm
+	otPlatRadioSetTransmitPower(ctx->instance, 4); // +4 dBm
 #endif
+
+	openthread_api_mutex_unlock(ctx);
 }
 
 static void ot_start_work_handler(struct k_work *item)
@@ -105,7 +111,13 @@ static void ot_stop_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	otThreadSetEnabled(openthread_get_default_context()->instance, false);
+	struct openthread_context *ctx = openthread_get_default_context();
+
+	openthread_api_mutex_lock(ctx);
+
+	otThreadSetEnabled(ctx->instance, false);
+
+	openthread_api_mutex_unlock(ctx);
 
 	ot_started = false;
 }
@@ -135,9 +147,15 @@ void rnb_utils_get_euid(uint64_t *euid)
 
 void rnb_utils_stop()
 {
-	otThreadSetEnabled(openthread_get_default_context()->instance, false);
+	struct openthread_context *ctx = openthread_get_default_context();
 
-	otIp6SetEnabled(openthread_get_default_context()->instance, false);
+	openthread_api_mutex_lock(ctx);
+
+	otThreadSetEnabled(ctx->instance, false);
+
+	otIp6SetEnabled(ctx->instance, false);
+
+	openthread_api_mutex_unlock(ctx);
 
 	ot_started = false;
 }
