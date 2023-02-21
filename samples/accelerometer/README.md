@@ -1,14 +1,9 @@
 # Accelerometer
-Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket sending the accelerometer values. Compatible with decawave_dwm1001_dev and qorvo_dwm3001c_dev.
+Sample code for the wireless node integrating RedNodeBus + OpenThread stack with a UDP client socket sending the accelerometer values. Compatible with `decawave_dwm1001_dev` and `qorvo_dwm3001c_dev` as BOARD_NAME.
 
-### decawave_dwm1001_dev board
-```
-west build -p -b decawave_dwm1001_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
-```
 
-### qorvo_dwm3001c_dev board
 ```
-west build -p -b qorvo_dwm3001c_dev . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 ```
 
 ## Testing the Accelerometer

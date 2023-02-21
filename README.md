@@ -20,7 +20,7 @@ mkdir zephyr-workspace
 cd zephyr-workspace
 ```
 ```
-west init -m git@github.com:rednodelabs/rednodebus-samples.git
+west init -m git@github.com:rednodelabs/rednodebus-samples
 ```
 ```
 west update
@@ -31,13 +31,34 @@ west update
 ## RNB Lib Documentation
 The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EVdIIvr2xPhOuW6Um5m6NfEBySMIM3ZZPjGyQ8J50eUucA?e=HRdwOT).
 
-To test the system, flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+
+All samples, except the `coprocessor` and `accelerometer`, are compatible with the following boards:
+- `decawave_dwm1001_dev` (data bus and ranging)
+- `qorvo_dwm3001c_dev` (data bus and ranging)
+- `insightsip_isp3010_dev` (data bus and ranging)
+- `nrf52840dk_nrf52840` (only data bus)
+- `nrf52840dongle_nrf52840` (only data bus)
+- `nrf52833dk_nrf52833` (only data bus)
+- `nrf52832_mdk`
+
+The `accelerometer` sample is compatible with the following boards:
+- `decawave_dwm1001_dev` (data bus and ranging)
+- `qorvo_dwm3001c_dev` (data bus and ranging)
+
+The `coprocessor` sample is compatible with the following boards:
+- `nrf52840dk_nrf52840`
+- `nrf52833dk_nrf52833`
+- `nrf52840dongle_nrf52840`
+- `qorvo_dwm3001c_dev`
+
+In general, other custom boards using the `nRF52832_QFAA` (with or without `decawave_dw1000`), `nRF52833_QIAA` (with or without `qorvo_dw3000`) and `nRF52840_QIAA` SOCs should work with the library; but only the boards mentioned aboved have been tested. Included [board's devicetrees](boards) can be used as a base for porting to other boards.
 
 ## Integrating RedNodeBus with the OpenThread Border Router (RNB OTBR)
 
-To run the RedNodeBus services in the edge platform, RedNodeLabs provides a docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router) for Raspberry Pi (models 3B+, 4).
+To run the RedNodeBus services in the edge platform, RedNodeLabs provides a docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router) for Raspberry Pi (models 3B+, 4). It may also work with other `linux/arm64` platforms.
 
-> A 64-bit OS is required, such as [Raspberry Pi OS (64-bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit)
+> A 64-bit OS is required, such as [Raspberry Pi OS (64-bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit).
 
 This container offers the OpenThread network services in combination with the RedNodeBus API based on MQTT.
 
@@ -46,47 +67,25 @@ Please, consider that this service requires getting a license. For further detai
 ### Setting-Up the Raspberry Pi
 Follow the instructions described in [OpenThread](https://openthread.io/guides/border-router/docker#raspberry_pi_setup) to set up your Raspberry Pi and install Docker tool.
 
-### Setting-Up the RNB OTBR Docker
-Firstly, pull the RNB OTBR from [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr). Please specify the desired TAG:
-```
-docker pull rednodelabs/rnb-otbr:TAG
-```
 
-> TAG has the format `vX.X.X`, check the tag of the current release in Github.
+### RNB OTBR Docker
+In order to launch and interface (via MQTT) with the RedNodeBus system a docker is available in the [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr).
 
-> The TAG of the RNB OTBR Docker must match the version of the samples flashed in the nodes, otherwise there might be incompatibilities!
+RNB OTBR requires a device connected and programmed with our [Radio Co-Processor (RCP) sample](samples/coprocessor/README.md) in order to form a Thread network and offer the RedNodeBus services. This sample has been developed to be used with multiple boards. You can directly download the binaries from [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for some boards and default configurations, e.g. USB and UART through the on-board debugger. If other configurations are required, e.g. different UART pins, follow the build instructions [here](samples/coprocessor/README.md).
 
-RNB OTBR requires our radio coprocessor (RCP) sample in order to form a Thread network and offer the RedNodeBus services. This sample has been developed to be used with the multiple boards. You can directly download the binaries from [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for some boards and default configurations.
+After building and flashing the RCP, attach it to the Raspberry Pi via UART or USB.
 
-If other configurations are required, e.g. different UART pins or baudrates, follow the build instructions [here](samples/coprocessor/README.md).
+> If using the RCP via USB, the serial port name will be automatically recognized and there is no need to find it manually. If using UART the rigt port, e.g. `/dev/ttyACM0`, needs to be specified later on.
 
-### Running the RNB OTBR Docker
-After building and flashing, attach the RCP device to the Raspberry Pi running RNB OTBR Docker via UART or USB. Determine the serial port name for the RCP device by checking /dev:
-
-```
-$ ls /dev/tty*
-/dev/ttyACMO
-```
-
-Once you have requested your customer information and received your claim certificates (certs.tar), copy the files to the Raspberry Pi and unzip them in a folder:
+Once you have requested your customer information and received your claim certificates (`certs.tar`), copy the files to the Raspberry Pi and unzip them in a folder:
 ```
 mkdir /home/pi/rnl_certs
 tar -xvzf certs.tar -C /home/pi/rnl_certs
 ```
-This folder should be mounted always as `/app/config` volume when running the docker container.
+This folder should be mounted always as a volume in `/app/config` when running the docker container.
 
-Start the RNB OTBR Docker, referencing the RCP's serial port and the folder where the credentials are stored. For example, if the RCP is mounted at `/dev/ttyACM0` and the certificates are in `/home/pi/rnl_certs`:
-```
-docker run --sysctl "net.ipv6.conf.all.disable_ipv6=0 net.ipv4.conf.all.forwarding=1 net.ipv6.conf.all.forwarding=1" -p 1883:1883 -it -v /home/pi/rnl_certs:/app/config -v /dev/ttyACM0:/dev/ttyACM0 --privileged rednodelabs/rnb-otbr:TAG
-```
-
-> The MQTT API uses requires using the port 1883. If the port is already used in the host, the docker initialization will fail. Disable services in the host that might be using it, such as Mosquitto.
-
-> The first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioing](PROVISIONING.md).
-
-### Running the RNB OTBR WEB UI Docker
-
-In order to visualize and control the RedNodeBus services, a web UI is also provided as a docker service in the [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr-web-ui).
+### RNB OTBR WEB UI Docker
+In order to visualize and interact with the RedNodeBus services, an optional web UI is also provided as a docker service in the [RedNodeLabs docker hub repository](https://hub.docker.com/repository/docker/rednodelabs/rnb-otbr-web-ui).
 
 The following docker compose template can be used to launch both RNB OTBR and RNB OTBR WEB UI services:
 
@@ -105,9 +104,11 @@ services:
       - net.ipv4.conf.all.forwarding=1
     volumes:
       - /home/pi/rnl_certs:/app/config
-      - /dev/ttyACM0:/dev/ttyACM0
+      - /dev:/dev
     environment:
-      - RADIO_URL=spinel+hdlc+uart:///dev/ttyACM0?uart-baudrate=1000000&uart-flow-control
+      - RCP_FD=/dev/ttyACM0
+      - MQTT_HOST=localhost
+      - MQTT_PORT=1883
 
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
@@ -120,22 +121,24 @@ services:
       - MQTT_PORT=1883
 ```
 
-Please, specify the right TAGs and desired parameters, such as the path of the volume with the certificates and the right serial port name.
+Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used).
 
-In order to launch the services, save the template as a yaml file and run docker compose as follows:
+> TAG has the format `vX.X.X`, check the tag of the current release in Github.
+
+> The TAG of the RNB OTBR Docker must match the version of the samples flashed in all nodes in the system, otherwise there might be incompatibilities!
+
+> In the sample yaml, the port `1883` is specified to deploy the MQTT broker. If the port is already used in the host, the docker initialization will fail. In that case, a different port can be binded. Similarly, port `3000` is used for the web UI, it can be changed to a different one. In both cases the chosen port needs to be specified to access externally the MQTT and web interfaces from the host.
+
+> The first time you connect the Raspberry Pi it will require Internet access to download the unique device certificate. It is also required the first time you connect a new node to request its license. For further details regarding the provisioning process, please read [RedNodeLabs Device Provisioning](PROVISIONING.md).
+
+In order to launch the services, save the template as a yaml (`docker-compose.yml`) file and run docker compose as follows:
 ```
-docker compose up
+docker compose up --force-recreate
 ```
 
-Remember to bring it down before relaunching it:
-In order to launch the services, save the template as a yaml file and run docker compose as follows:
-```
-docker compose down
-```
+On the Raspberry Pi running the docker containers, open a browser and go to `127.0.0.1:3000` to acces the web UI and connect the wireless nodes programmed with the RedNodeBus samples.
 
-On the Raspberry Pi running the docker containers, open a browser and go to `127.0.0.1:3000` to acces the web UI.
-
-> The web UI can be accessed from a different machine in the same local network as the Raspberry Pi, e.g. entering `raspberrypi:3000`, to avoid the load of the graphical interface in the Pi.
+> The web UI can be accessed from a different machine in the same local network as the Raspberry Pi, e.g. going to `raspberrypi:3000`, to avoid the load of the graphical interface in the Pi.
 
 The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/log/syslog`.
 
@@ -143,4 +146,55 @@ The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/lo
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EdGv-n0aNT5Glp43ALY1OkgBFfxalbSmV6y2VABwifQULw?e=5ndMeu).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EcI9yMd3g8lAhB6dd7g5Zm8BrznjNJiMxAc71BnnibC6Sw?e=qCAV2m).
+
+## RNB OTBR DFU Service
+We offer Device Firmware Upgrade (DFU) licenses for automatically managing the firmware of the RCP attached to the Raspberry Pi, in order to facilitate the deployment of the service and tp avoid version mismatches between the docker service and the firmware running in the RCP. If you acquire the license for the DFU service, the firmware will be automatically checked when the docker starts, and the right image will be flashed if not already present in the device.
+
+We currently support the following boards:
+- `nrf52840dk_nrf52840` (USB and UART interface via on-board debugger)
+- `nrf52833dk_nrf52833` (USB and UART interface via on-board debugger)
+- `qorvo_dwm3001c_dev` (USB only)
+
+The board needs to be flashed with the `coprocessor_smp_svr` available in [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for the supported boards and interfaces. Please use the following command to flash the corresponding image:
+```
+west flash --hex-file path/to/image/merged.hex
+```
+
+In order to activate the service in the docker, use the following docker compose template:
+
+``` yaml
+version: '3.8'
+services:
+  rnb-otbr:
+    image: rednodelabs/rnb-otbr:TAG
+    platform: linux/arm64
+    ports:
+      - "1883:1883"
+    privileged: true
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv4.conf.all.forwarding=1
+    volumes:
+      - /home/pi/rnl_certs:/app/config
+      - /dev:/dev
+    environment:
+      - RCP_FD=/dev/ttyACM0
+      - MQTT_HOST=localhost
+      - MQTT_PORT=1883
+      - RNB_OTBR_DFU=1
+      - RNB_OTBR_DFU_BOARD=BOARD_NAME
+      - RNB_OTBR_DFU_UART=0
+
+  rnb-otbr-web-ui:
+    image: rednodelabs/rnb-otbr-web-ui:TAG
+    platform: linux/arm64
+    ports:
+      - "3000:3000"
+    environment:
+      - WEB_UI_PORT=3000
+      - MQTT_HOST=rnb-otbr
+      - MQTT_PORT=1883
+```
+Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used) and change `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`.

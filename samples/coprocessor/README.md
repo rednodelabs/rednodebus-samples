@@ -1,24 +1,24 @@
 # Coprocessor
-The Coprocessor sample demonstrates how to implement OpenThread's RCP inside the Zephyr environment. Compatible with nrf52840dk_nrf52840, nrf52840dongle_nrf52840,
-nrf52833dk_nrf52833 and qorvo_dwm3001c_dev.
+The Coprocessor sample demonstrates how to implement OpenThread's RCP inside the Zephyr environment. Compatible with `nrf52840dk_nrf52840`, `nrf52840dongle_nrf52840`,
+`nrf52833dk_nrf52833` and `qorvo_dwm3001c_dev` as BOARD_NAME.
 
-### nrf52840dk_nrf52840 board
 #### With USB interface:
 ```
-west build -p -b nrf52840dk_nrf52840 . -- -DDTC_OVERLAY_FILE=./boards/nrf52840dk_usb.overlay -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf"
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf"
 ```
+
 #### With USB interface and ranging diagnostic
 ```
-west build -p -b nrf52840dk_nrf52840 . -- -DDTC_OVERLAY_FILE=./boards/nrf52840dk_usb.overlay -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf ../common/overlay-rnb-ranging-diagnostic.conf"
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf ../common/overlay-rnb-ranging-diagnostic.conf"
 ```
 
 #### With UART interface:
 ```
-west build -p -b nrf52840dk_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf"
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf"
 ```
 #### With UART interface and ranging diagnostic
 ```
-west build -p -b nrf52840dk_nrf52840 . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf ../common/overlay-rnb-ranging-diagnostic.conf"
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf ../common/overlay-rnb-ranging-diagnostic.conf"
 ```
 
 #### Mass Storage Device known issue (only for UART interface through the on-board debugger)
@@ -54,13 +54,3 @@ JLinkExe -device NRF52840_XXAA -if SWD -speed 4000 -autoconnect 1 -SelectEmuBySN
 SetHWFC Force
 ```
 4. Power cycle the DK.
-
-### nrf52840dongle_nrf52840 board
-#### With USB interface:
-```
-west build -p -b nrf52840dongle_nrf52840 . -- -DDTC_OVERLAY_FILE=./boards/nrf52840dongle_usb.overlay -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf"
-```
-#### With USB interface and ranging diagnostic
-```
-west build -p -b nrf52840dongle_nrf52840 . -- -DDTC_OVERLAY_FILE=./boards/nrf52840dongle_usb.overlay -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-vendor_hook-rnb.conf overlay-usb-rnb.conf ../common/overlay-rnb-ranging-diagnostic.conf"
-```

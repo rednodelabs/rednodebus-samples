@@ -5,6 +5,7 @@
  */
 #include <logging/log.h>
 #include <net/ieee802154_radio.h>
+#include <zephyr/device.h>
 
 #ifdef CONFIG_REDNODEBUS
 #include "rnb_leds.h"
@@ -39,6 +40,14 @@ static void handle_rnb_user_rxtx_signal(const struct device *dev,
 	}
 }
 #endif /* CONFIG_REDNODEBUS */
+
+#if  defined(CONFIG_REDNODEBUS_WATCHDOG)
+const struct device * rnb_get_wdt(void)
+{
+	const struct device *wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
+	return wdt;
+}
+#endif /* CONFIG_REDNODEBUS_WATCHDOG */
 
 void main(void)
 {
