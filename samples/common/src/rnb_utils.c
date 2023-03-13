@@ -162,7 +162,13 @@ void rnb_utils_stop()
 
 void rnb_utils_start()
 {
-	k_work_submit(&ot_start_work);
+	struct openthread_context *ctx = openthread_get_default_context();
+
+	openthread_api_mutex_lock(ctx);
+
+	otIp6SetEnabled(ctx->instance, true);
+
+	openthread_api_mutex_unlock(ctx);
 }
 
 static void print_rnb_state(const uint8_t state)
@@ -295,9 +301,11 @@ static void handle_rnb_user_rxtx_signal(const struct device *dev,
 	{
 	case REDNODEBUS_USER_RX_SIGNAL:
 		rnb_leds_set_rx(active);
+		rnb_leds_set_tx(false);
 		break;
 	case REDNODEBUS_USER_TX_SIGNAL:
 		rnb_leds_set_tx(active);
+		rnb_leds_set_rx(false);
 		break;
 	default:
 		break;

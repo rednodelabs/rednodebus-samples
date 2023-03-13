@@ -29,7 +29,7 @@ west update
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
 ## RNB Lib Documentation
-The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EVdIIvr2xPhOuW6Um5m6NfEBySMIM3ZZPjGyQ8J50eUucA?e=HRdwOT).
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EeVnTFcMkElEqDqSUWYj_u4BZYCRGO85b2ADyt96HjvMVg?e=aEhFKn).
 
 To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 
@@ -146,7 +146,7 @@ The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/lo
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EcI9yMd3g8lAhB6dd7g5Zm8BrznjNJiMxAc71BnnibC6Sw?e=qCAV2m).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/ERR20ElfowtMns9Uoa9DmPMBnOYL4VjGjKh4NVl7c2ILmQ?e=veB0qo).
 
 ## RNB OTBR DFU Service
 We offer Device Firmware Upgrade (DFU) licenses for automatically managing the firmware of the RCP attached to the Raspberry Pi, in order to facilitate the deployment of the service and tp avoid version mismatches between the docker service and the firmware running in the RCP. If you acquire the license for the DFU service, the firmware will be automatically checked when the docker starts, and the right image will be flashed if not already present in the device.
