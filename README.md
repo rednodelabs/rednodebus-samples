@@ -29,7 +29,7 @@ west update
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
 ## RNB Lib Documentation
-The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EeVnTFcMkElEqDqSUWYj_u4BZYCRGO85b2ADyt96HjvMVg?e=aEhFKn).
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX).
 
 To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
 

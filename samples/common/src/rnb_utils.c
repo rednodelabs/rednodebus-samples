@@ -19,7 +19,10 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include <openthread/ip6.h>
 #include <openthread/thread.h>
 
+#include <dk_buttons_and_leds.h>
+
 #include "rnb_leds.h"
+#include "rnb_utils.h"
 
 #define REDNODEBUS_UTILS_STACK_SIZE 512
 #define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8
@@ -53,9 +56,10 @@ struct k_work ot_start_work;
 struct k_work ot_stop_work;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
-static bool rnb_configured;
 static struct rednodebus_user_config rnb_user_config;
 static struct rednodebus_user_runtime_config rnb_user_runtime_config;
+static bool rnb_configured;
+static bool rnb_started;
 static bool rnb_connected;
 static bool ot_started;
 
@@ -81,45 +85,42 @@ static void ot_init_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	struct openthread_context *ctx = openthread_get_default_context();
-
-	openthread_api_mutex_lock(ctx);
-
-	otIp6SetEnabled(ctx->instance, true);
-
-#if defined(CONFIG_SOC_NRF52840)
-	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(ctx->instance, 8); // +8 dBm
-#else
-	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(ctx->instance, 4); // +4 dBm
-#endif
-
-	openthread_api_mutex_unlock(ctx);
+	rnb_utils_start();
 }
 
 static void ot_start_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
+	int ret;
 
-	openthread_start(openthread_get_default_context());
+	if (rnb_connected && !ot_started)
+	{
+		ret = openthread_start(openthread_get_default_context());
 
-	ot_started = true;
+		if (ret == 0)
+		{
+			ot_started = true;
+		}
+	}
 }
 
 static void ot_stop_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
+	struct openthread_context *ctx;
 
-	struct openthread_context *ctx = openthread_get_default_context();
+	if (ot_started)
+	{
+		ctx = openthread_get_default_context();
 
-	openthread_api_mutex_lock(ctx);
+		openthread_api_mutex_lock(ctx);
 
-	otThreadSetEnabled(ctx->instance, false);
+		otThreadSetEnabled(ctx->instance, false);
 
-	openthread_api_mutex_unlock(ctx);
+		openthread_api_mutex_unlock(ctx);
 
-	ot_started = false;
+		ot_started = false;
+	}
 }
 
 __WEAK void rnb_utils_handle_new_state(const struct rednodebus_user_event_state *event_state)
@@ -147,26 +148,63 @@ void rnb_utils_get_euid(uint64_t *euid)
 
 void rnb_utils_stop()
 {
-	struct openthread_context *ctx = openthread_get_default_context();
+	otError error;
+	struct openthread_context *ctx;
+
+	if (!rnb_started)
+	{
+		return;
+	}
+
+	ctx = openthread_get_default_context();
 
 	openthread_api_mutex_lock(ctx);
 
-	otThreadSetEnabled(ctx->instance, false);
+	error = otThreadSetEnabled(ctx->instance, false);
 
-	otIp6SetEnabled(ctx->instance, false);
+	if (error == OT_ERROR_NONE)
+	{
+		ot_started = false;
+	}
+
+	error = otIp6SetEnabled(ctx->instance, false);
+
+	if (error == OT_ERROR_NONE)
+	{
+		rnb_started = false;
+	}
 
 	openthread_api_mutex_unlock(ctx);
-
-	ot_started = false;
 }
 
 void rnb_utils_start()
 {
-	struct openthread_context *ctx = openthread_get_default_context();
+	otError error;
+	struct openthread_context *ctx;
+
+	if (rnb_started)
+	{
+		return;
+	}
+
+	ctx = openthread_get_default_context();
 
 	openthread_api_mutex_lock(ctx);
 
-	otIp6SetEnabled(ctx->instance, true);
+	error = otIp6SetEnabled(ctx->instance, true);
+
+	if (error == OT_ERROR_NONE)
+	{
+		rnb_started = true;
+	}
+
+#if defined(CONFIG_SOC_NRF52840)
+	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(ctx->instance, 8); // +8 dBm
+#else
+	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(ctx->instance, 4); // +4 dBm
+#endif
 
 	openthread_api_mutex_unlock(ctx);
 }
@@ -339,7 +377,8 @@ static void process_rnb_utils_event(const struct device *dev,
 
 			LOG_INF("RNB period ms: %u", event_state->period_ms);
 		}
-		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
+
+		if (event_state->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
 		{
 			if (!rnb_configured)
 			{
@@ -373,24 +412,17 @@ static void process_rnb_utils_event(const struct device *dev,
 				// ret = REDNODEBUS_API(dev)->set_rnb_user_settings(dev, &rnb_user_settings);
 			}
 		}
-
-		if (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED)
+		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED)
 		{
 			rnb_connected = true;
 
-			if (!ot_started)
-			{
-				k_work_submit(&ot_start_work);
-			}
+			k_work_submit(&ot_start_work);
 		}
 		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
 		{
-			rnb_connected = false;
+			k_work_submit(&ot_stop_work);
 
-			if (ot_started)
-			{
-				k_work_submit(&ot_stop_work);
-			}
+			rnb_connected = false;
 		}
 
 		if ((event_state->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
@@ -432,6 +464,25 @@ bool is_rnb_connected(void)
 	return rnb_connected;
 }
 
+#if defined(CONFIG_DK_LIBRARY)
+static void on_button_changed(uint32_t button_state, uint32_t has_changed)
+{
+	uint32_t buttons = button_state & has_changed;
+
+	if (buttons & DK_BTN1_MSK)
+	{
+		if (rnb_started)
+		{
+			rnb_utils_stop();
+		}
+		else
+		{
+			rnb_utils_start();
+		}
+	}
+}
+#endif
+
 int init_rnb(void)
 {
 	const struct device *dev = device_get_binding(CONFIG_IEEE802154_NRF5_DRV_NAME);
@@ -440,17 +491,26 @@ int init_rnb(void)
 	int ret;
 
 	ret = rnb_leds_init();
-
-	if (ret != 0)
+	if (ret)
 	{
 		LOG_WRN("Cannot init RedNodeBus LEDs");
 	}
+
+#if defined(CONFIG_DK_LIBRARY)
+	ret = dk_buttons_init(on_button_changed);
+	if (ret)
+	{
+		LOG_ERR("Cannot init buttons (error: %d)", ret);
+		return ret;
+	}
+#endif
 
 	rnb_utils_get_euid(&euid);
 
 	LOG_INF("EUID 0x%04X%04X", (uint32_t)(euid >> 32), (uint32_t)euid);
 
 	rnb_configured = false;
+	rnb_started = false;
 	rnb_connected = false;
 	ot_started = false;
 

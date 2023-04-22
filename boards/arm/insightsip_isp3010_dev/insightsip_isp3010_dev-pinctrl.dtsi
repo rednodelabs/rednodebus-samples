@@ -61,9 +61,9 @@
 
 	spi2_sleep: spi2_sleep {
 		group1 {
-			psels = <NRF_PSEL(SPIM_SCK, 0, 16)>,
-				<NRF_PSEL(SPIM_MOSI, 0, 20)>,
-				<NRF_PSEL(SPIM_MISO, 0, 18)>;
+			psels = <NRF_PSEL(SPIM_SCK, 0, 6)>,
+				<NRF_PSEL(SPIM_MOSI, 0, 26)>,
+				<NRF_PSEL(SPIM_MISO, 0, 30)>;
 			low-power-enable;
 		};
 	};
