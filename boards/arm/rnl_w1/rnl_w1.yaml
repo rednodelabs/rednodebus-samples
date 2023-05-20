@@ -1,0 +1,19 @@
+identifier: rnl_w1
+name: RedNodeLabs-W1
+type: mcu
+arch: arm
+ram: 128
+flash: 512
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - adc
+  - usb_device
+  - ble
+  - gpio
+  - ieee802154
+  - pwm
+  - watchdog
+  - counter

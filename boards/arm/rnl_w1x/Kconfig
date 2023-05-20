@@ -1,0 +1,10 @@
+# RedNodeLabs W1X board configuration
+
+# Copyright (c) 2023 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_ENABLE_DCDC
+	bool "DCDC mode"
+	select SOC_DCDC_NRF52X
+	default y
+	depends on BOARD_RNL_W1X

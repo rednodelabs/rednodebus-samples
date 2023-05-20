@@ -258,8 +258,6 @@ void main(void)
 	{
 		k_sleep(K_MSEC(1000));
 	}
-
-	k_sleep(K_MSEC(1000));
 #endif /* CONFIG_REDNODEBUS */
 
 	init_app();

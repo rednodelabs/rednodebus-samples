@@ -1,0 +1,8 @@
+# RedNodeLabs W1X board configuration
+
+# Copyright (c) 2023 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_RNL_W1X
+	bool "RedNodeLabs W1X"
+	depends on SOC_NRF52833_QIAA

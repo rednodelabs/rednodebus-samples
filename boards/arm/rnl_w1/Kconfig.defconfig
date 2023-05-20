@@ -1,0 +1,26 @@
+# RedNodeLabs W1 board configuration
+
+# Copyright (c) 2023 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_RNL_W1
+
+config BOARD
+	default "rnl_w1"
+
+config BT_CTLR
+	default BT
+
+config I2C
+	default SENSOR
+
+config SPI
+	default y
+	depends on IEEE802154
+
+config IEEE802154_DW3000
+	bool "Enables DW3000 board"
+	default y
+	depends on IEEE802154
+
+endif # BOARD_RNL_W1

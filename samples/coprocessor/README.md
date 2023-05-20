@@ -1,6 +1,6 @@
 # Coprocessor
 The Coprocessor sample demonstrates how to implement OpenThread's RCP inside the Zephyr environment. Compatible with `nrf52840dk_nrf52840`, `nrf52840dongle_nrf52840`,
-`nrf52833dk_nrf52833` and `qorvo_dwm3001c_dev` as BOARD_NAME.
+`nrf52833dk_nrf52833`, `qorvo_dwm3001c_dev` and `rnl_w1` as BOARD_NAME.
 
 #### With USB interface:
 ```

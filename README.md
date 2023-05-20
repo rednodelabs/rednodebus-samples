@@ -31,32 +31,41 @@ west update
 ## RNB Lib Documentation
 The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX).
 
-To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#rednodebus--openthread-border-router-rnb-otbr) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-specification).
+To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-documentation).
 
-All samples, except the `coprocessor` and `accelerometer`, are compatible with the following boards:
+All samples, except the `coprocessor`, `battery` and `accelerometer`, are compatible with the following boards:
 - `decawave_dwm1001_dev` (data bus and ranging)
 - `qorvo_dwm3001c_dev` (data bus and ranging)
 - `insightsip_isp3010_dev` (data bus and ranging)
 - `nrf52840dk_nrf52840` (only data bus)
 - `nrf52840dongle_nrf52840` (only data bus)
 - `nrf52833dk_nrf52833` (only data bus)
-- `nrf52832_mdk`
+- `nrf52832_mdk` (only data bus)
+- `rnl_w1` (data bus and ranging)
+- `rnl_w1x` (only data bus)
+
+The `battery` sample is compatible with the following boards:
+- `rnl_w1` (data bus and ranging)
+- `rnl_w1x` (only data bus)
 
 The `accelerometer` sample is compatible with the following boards:
 - `decawave_dwm1001_dev` (data bus and ranging)
 - `qorvo_dwm3001c_dev` (data bus and ranging)
+- `rnl_w1` (data bus and ranging)
+- `rnl_w1x` (only data bus)
 
 The `coprocessor` sample is compatible with the following boards:
 - `nrf52840dk_nrf52840`
 - `nrf52833dk_nrf52833`
 - `nrf52840dongle_nrf52840`
 - `qorvo_dwm3001c_dev`
+- `rnl_w1`
 
 In general, other custom boards using the `nRF52832_QFAA` (with or without `decawave_dw1000`), `nRF52833_QIAA` (with or without `qorvo_dw3000`) and `nRF52840_QIAA` SOCs should work with the library; but only the boards mentioned aboved have been tested. Included [board's devicetrees](boards) can be used as a base for porting to other boards.
 
-## Integrating RedNodeBus with the OpenThread Border Router (RNB OTBR)
+## Integrating RedNodeBus with the OpenThread Border Router
 
-To run the RedNodeBus services in the edge platform, RedNodeLabs provides a docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router) for Raspberry Pi (models 3B+, 4). It may also work with other `linux/arm64` platforms.
+To run the RedNodeBus services in the edge platform, RedNodeLabs provides a docker container based on the [OpenThread Border Router (OTBR)](https://openthread.io/guides/border-router) for Raspberry Pi (models 3B+, 4). It may also work with other `linux/arm64` platforms. Alternatively, the docker is also available for the `linux/amd64` platform, by specifying it in the docker compose file, so it can be run on a regular Linux laptop.
 
 > A 64-bit OS is required, such as [Raspberry Pi OS (64-bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit).
 
@@ -142,19 +151,14 @@ On the Raspberry Pi running the docker containers, open a browser and go to `127
 
 The docker log file is stored in the mounted volume, i.e. `/home/pi/rnl_certs/log/syslog`.
 
-## MQTT API Documentation
-
-The MQTT API can be also used to interact with the system. For further details, read the API documentation.
-
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/ERR20ElfowtMns9Uoa9DmPMBnOYL4VjGjKh4NVl7c2ILmQ?e=veB0qo).
-
-## RNB OTBR DFU Service
+### RNB OTBR DFU Service
 We offer Device Firmware Upgrade (DFU) licenses for automatically managing the firmware of the RCP attached to the Raspberry Pi, in order to facilitate the deployment of the service and tp avoid version mismatches between the docker service and the firmware running in the RCP. If you acquire the license for the DFU service, the firmware will be automatically checked when the docker starts, and the right image will be flashed if not already present in the device.
 
 We currently support the following boards:
 - `nrf52840dk_nrf52840` (USB and UART interface via on-board debugger)
 - `nrf52833dk_nrf52833` (USB and UART interface via on-board debugger)
 - `qorvo_dwm3001c_dev` (USB only)
+- `rnl_w1` (USB only)
 
 The board needs to be flashed with the `coprocessor_smp_svr` available in [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex) for the supported boards and interfaces. Please use the following command to flash the corresponding image:
 ```
@@ -186,6 +190,7 @@ services:
       - RNB_OTBR_DFU=1
       - RNB_OTBR_DFU_BOARD=BOARD_NAME
       - RNB_OTBR_DFU_UART=0
+      - RNB_OTBR_DFU_RANGING_DIAG=0
 
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
@@ -197,4 +202,10 @@ services:
       - MQTT_HOST=rnb-otbr
       - MQTT_PORT=1883
 ```
-Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used) and change `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`.
+Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used) and change `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`. If ranging diagnostics are desired set `RNB_OTBR_DFU_RANGING_DIAG` to `1` (only for testing purposes, all other nodes in the system must be compiled with this option for the system to operate properly).
+
+## MQTT API Documentation
+
+The MQTT API can be also used to interact with the system. For further details, read the API documentation.
+
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/ERR20ElfowtMns9Uoa9DmPMBnOYL4VjGjKh4NVl7c2ILmQ?e=veB0qo).

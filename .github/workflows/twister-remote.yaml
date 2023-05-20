@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        sample: [accelerometer, coap_client, coprocessor, echo_client, rednodebus_node, socket_test]
+        sample: [accelerometer, coap_client, coprocessor, echo_client, rednodebus_node, socket_test, battery]
     env:
       ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.15.2
       TWISTER_COMMON: ' --force-color --inline-logs -v -N --retry-failed 1 --disable-warnings-as-errors -t ci_build --integration'

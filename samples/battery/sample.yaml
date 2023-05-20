@@ -1,0 +1,12 @@
+sample:
+  name: Battery
+  description: Test sending battery level values using the UDP client
+tests:
+  sample.battery.rnb:
+    platform_allow: rnl_w1 rnl_w1x
+    integration_platforms:
+      - rnl_w1
+      - rnl_w1x
+    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
+    build_only: true
+    tags: ci_build

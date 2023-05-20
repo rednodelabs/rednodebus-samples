@@ -1,6 +1,5 @@
 import socket
 import time
-import threading
 from prettytable import PrettyTable
 
 local_ip="172.17.0.1"
@@ -13,31 +12,14 @@ ctr_len = 4
 table_header = ["UID", "Packets received", "Packets lost", "Error rate (%)", "Bytes received", "Bitrate (Bps)"]
 stats_dic = {}
 
-def print_stats_table():
-
-    while 1:
-        # Specify the Column Names while initializing the Table
-        myTable = PrettyTable(table_header)
-
-        # Add rows
-        for key in stats_dic:
-            myTable.add_row([key, stats_dic[key][2], stats_dic[key][3], round(stats_dic[key][4], 2), stats_dic[key][5], round(stats_dic[key][6], 1)])
-
-        print(myTable)
-
-        time.sleep(1)
-
-
-# creating thread to draw the stats table
-table_draw = threading.Thread(target=print_stats_table)
-table_draw.start()
-
 #Create a datagram socket
 sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
 #Bind
 server = (local_ip, local_port)
 sock.bind(server)
+
+print("Waiting for incoming data...")
 
 #Listen
 while (True):
@@ -58,6 +40,15 @@ while (True):
             stats_dic[euid][6] = stats_dic[euid][5]/(time.time() - stats_dic[euid][7])
     else:
         stats_dic[euid] = [session_rand, ctr, 1, 0, 0, len(payload), 0, time.time()]
+
+    # Specify the Column Names while initializing the Table
+    myTable = PrettyTable(table_header)
+
+    # Add rows
+    for key in stats_dic:
+        myTable.add_row([key, stats_dic[key][2], stats_dic[key][3], round(stats_dic[key][4], 2), stats_dic[key][5], round(stats_dic[key][6], 1)])
+
+    print(myTable)
 
 
 
