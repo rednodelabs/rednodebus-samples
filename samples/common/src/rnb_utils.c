@@ -21,8 +21,8 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 
 #include <dk_buttons_and_leds.h>
 
-#include "rnb_leds.h"
 #include "rnb_utils.h"
+#include "rnb_leds.h"
 
 #define REDNODEBUS_UTILS_STACK_SIZE 512
 #define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8

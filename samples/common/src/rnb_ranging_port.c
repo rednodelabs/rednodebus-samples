@@ -11,12 +11,12 @@
  * @author RedNodeLabs.
  */
 
-// zephyr includes
 #include <errno.h>
 #include <zephyr.h>
 #include <sys/printk.h>
 #include <device.h>
 #include <soc.h>
+
 #include "rnb_ranging_port.h"
 #include "rnb_ranging_spi.h"
 #include "rnb_ranging_sleep.h"
@@ -301,8 +301,8 @@ void port_set_dw_ic_spi_fastrate(void)
  * */
 void port_DisableEXT_IRQ(void)
 {
-	gpio_pin_configure(irq_dev, IRQ_GPIO_PIN, GPIO_DISCONNECTED);
 	gpio_pin_interrupt_configure(irq_dev, IRQ_GPIO_PIN, GPIO_INT_DISABLE);
+	gpio_pin_configure(irq_dev, IRQ_GPIO_PIN, GPIO_DISCONNECTED);
 }
 
 /* @fn      port_EnableEXT_IRQ

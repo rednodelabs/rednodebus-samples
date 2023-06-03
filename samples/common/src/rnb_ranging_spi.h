@@ -14,27 +14,22 @@
 #ifndef _RNB_RANGING_SPI_H_
 #define _RNB_RANGING_SPI_H_
 
+#include <nrfx_spi.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#define DECA_MAX_SPI_HEADER_LENGTH (3) // max number of bytes in header (for formating & sizing)
+struct spi_nrfx_config
+{
+	nrfx_spi_t spi;
+	nrfx_spi_config_t def_config;
+	void (*irq_connect)(void);
+	const struct pinctrl_dev_config *pcfg;
+};
 
-	/*! ------------------------------------------------------------------------------------------------------------------
-	 * Function: openspi()
-	 *
-	 * Low level abstract function to open and initialise access to the SPI device.
-	 * returns 0 for success, or -1 for error
-	 */
 	int openspi(void);
-
-	/*! ------------------------------------------------------------------------------------------------------------------
-	 * Function: closespi()
-	 *
-	 * Low level abstract function to close the the SPI device.
-	 * returns 0 for success, or -1 for error
-	 */
 	int closespi(void);
 
 	void set_spi_speed_slow();

@@ -17,8 +17,9 @@
 #include <device.h>
 #include <drivers/spi.h>
 #include <drivers/gpio.h>
-#include <nrfx_spi.h>
 #include <zephyr/drivers/pinctrl.h>
+#include <zephyr/pm/device.h>
+
 #include "rnb_ranging_spi.h"
 #include "rnb_ranging_port.h"
 
@@ -37,16 +38,9 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 static const struct device *spi;
 static struct spi_config *spi_cfg;
 static struct spi_config spi_cfgs[SPI_CFGS_COUNT] = {0};
-static bool spi_initialized;
-
-struct spi_nrfx_config {
-	nrfx_spi_t	  spi;
-	nrfx_spi_config_t def_config;
-	void (*irq_connect)(void);
-#ifdef CONFIG_PINCTRL
-	const struct pinctrl_dev_config *pcfg;
-#endif
-};
+static bool driver_initialized = false;
+static bool spi_initialized = false;
+static bool spi_busy = false;
 
 static inline nrf_spi_frequency_t get_nrf_spi_frequency(uint32_t frequency)
 {
@@ -120,8 +114,6 @@ static inline nrf_spi_bit_order_t get_nrf_spi_bit_order(uint16_t operation)
 	}
 }
 
-//static struct spi_cs_control cs_ctrl;
-
 /*
  *****************************************************************************
  *
@@ -140,29 +132,62 @@ static const struct gpio_dt_spec dwm_cs = SPI_CS_GPIOS_DT_SPEC_GET(DWM_SPI);
 /*
  *****************************************************************************
  *
- *                              DW3000 SPI section
+ *                              SPI section
  *
  *****************************************************************************
  */
 
-int update_spi_config(void)
+int openspi(void)
 {
-	const struct spi_nrfx_config *dev_config = spi->config;
+	const struct spi_nrfx_config *dev_config;
 	nrfx_spi_config_t config;
 	nrfx_err_t result;
 
-	pinctrl_apply_state(dev_config->pcfg, PINCTRL_STATE_DEFAULT);
+	if(spi_busy)
+	{
+		return -EIO;
+	}
+
+	if (!driver_initialized)
+	{
+		for (uint8_t i = 0; i < SPI_CFGS_COUNT; i++)
+		{
+			spi_cfgs[i].operation = SPI_WORD_SET(8);
+		}
+
+		spi_cfgs[0].frequency = 2000000;
+		spi_cfgs[1].frequency = DT_PROP(DWM_SPI, spi_max_frequency);
+
+		spi = DEVICE_DT_GET(DT_PARENT(DWM_SPI));
+		if (!spi)
+		{
+			LOG_ERR("%s: SPI binding failed.\n", __func__);
+			return -EIO;
+		}
+
+		pm_device_state_lock(spi);
+
+		driver_initialized = true;
+	}
+
+	if (spi_initialized)
+	{
+		LOG_ERR("Failed accessing SPI");
+		return -EIO;
+	}
+
+	dev_config = spi->config;
+
+	spi_cfg = &spi_cfgs[0];
 
 	config = dev_config->def_config;
 	config.frequency = get_nrf_spi_frequency(spi_cfg->frequency);
 	config.mode = get_nrf_spi_mode(spi_cfg->operation);
 	config.bit_order = get_nrf_spi_bit_order(spi_cfg->operation);
 
-	if (spi_initialized)
-	{
-		nrfx_spi_uninit(&dev_config->spi);
-		spi_initialized = false;
-	}
+	config.skip_gpio_cfg = true;
+	config.skip_psel_cfg = true;
+	config.ss_pin = NRFX_SPI_PIN_NOT_USED;
 
 	result = nrfx_spi_init(&dev_config->spi, &config,
 			       NULL, NULL);
@@ -172,96 +197,73 @@ int update_spi_config(void)
 		return -EIO;
 	}
 
-	spi_initialized = true;
-
-	return 0;
-}
-
-/*
- * Function: openspi()
- *
- * Low level abstract function to open and initialise access to the SPI device.
- * returns 0 for success, or -1 for error
- */
-int openspi(void)
-{
-	const struct spi_nrfx_config *dev_config;
-
 	gpio_pin_configure_dt(&dwm_cs, GPIO_OUTPUT_INACTIVE);
+	pinctrl_apply_state(dev_config->pcfg, PINCTRL_STATE_DEFAULT);
 
-	for (uint8_t i = 0; i < SPI_CFGS_COUNT; i++)
-	{
-		spi_cfgs[i].operation = SPI_WORD_SET(8);
-	}
-
-	spi_cfgs[0].frequency = 2000000;
-	spi_cfgs[1].frequency = DT_PROP(DWM_SPI, spi_max_frequency);
-
-	spi = DEVICE_DT_GET(DT_PARENT(DWM_SPI));
-	if (!spi)
-	{
-		LOG_ERR("%s: SPI binding failed.\n", __func__);
-		return -EIO;
-	}
-
-	set_spi_speed_slow();
-
-	dev_config = spi->config;
 	NRFX_IRQ_DISABLE(nrfx_get_irq_number((&dev_config->spi)->p_reg));
-        nrf_spi_int_disable((&dev_config->spi)->p_reg, NRF_SPI_ALL_INTS_MASK);
+	nrf_spi_int_disable((&dev_config->spi)->p_reg, NRF_SPI_ALL_INTS_MASK);
+
+	spi_initialized = true;
 
 	return 0;
 }
 
 void set_spi_speed_slow(void)
 {
+	const struct spi_nrfx_config *dev_config = spi->config;
+
+	if (!spi_initialized)
+	{
+		LOG_ERR("Failed accessing SPI");
+		return;
+	}
+
 	if (spi_cfg != &spi_cfgs[0])
 	{
 		spi_cfg = &spi_cfgs[0];
-		update_spi_config();
+		nrf_spi_frequency_set((&dev_config->spi)->p_reg, get_nrf_spi_frequency(spi_cfg->frequency));
 	}
 }
 
 void set_spi_speed_fast(void)
 {
+	const struct spi_nrfx_config *dev_config = spi->config;
+
+	if (!spi_initialized)
+	{
+		LOG_ERR("Failed accessing SPI");
+		return;
+	}
+
 	if (spi_cfg != &spi_cfgs[1])
 	{
 		spi_cfg = &spi_cfgs[1];
-		update_spi_config();
+		nrf_spi_frequency_set((&dev_config->spi)->p_reg, get_nrf_spi_frequency(spi_cfg->frequency));
 	}
 }
 
-/*
- * Function: closespi()
- *
- * Low level abstract function to close the the SPI device.
- * returns 0 for success, or -1 for error
- */
 int closespi(void)
 {
 	const struct spi_nrfx_config *dev_config = spi->config;
 
-	spi_cfg = NULL;
+	if(spi_busy)
+	{
+		return -EIO;
+	}
 
 	if (spi_initialized)
 	{
 		nrfx_spi_uninit(&dev_config->spi);
+
+		gpio_pin_configure_dt(&dwm_cs, GPIO_DISCONNECTED);
+		pinctrl_apply_state(dev_config->pcfg, PINCTRL_STATE_SLEEP);
+
 		spi_initialized = false;
 	}
-
-	gpio_pin_configure_dt(&dwm_cs, GPIO_DISCONNECTED);
-	pinctrl_apply_state(dev_config->pcfg, PINCTRL_STATE_SLEEP);
 
 	return 0;
 }
 
-/*
- * Function: writetospi()
- *
- * Low level abstract function to write to the SPI
- * Takes two separate byte buffers for write header and write data
- * returns 0 for success
- */
 int writetospi(uint16_t headerLength,
 	       const uint8_t *headerBuffer,
 	       uint16_t bodyLength,
@@ -270,6 +272,20 @@ int writetospi(uint16_t headerLength,
 	const struct spi_nrfx_config *dev_config = spi->config;
 	nrfx_spi_xfer_desc_t xfer;
 	nrfx_err_t result;
+	int ret = 0;
+
+	__disable_irq();
+
+	if (!spi_initialized || headerLength == 0 || bodyLength == 0 || spi_busy)
+	{
+		LOG_ERR("Failed accessing SPI");
+		__enable_irq();
+		return -EIO;
+	}
+
+	spi_busy = true;
+
+	__enable_irq();
 
 	gpio_pin_set_dt(&dwm_cs, true);
 
@@ -281,9 +297,9 @@ int writetospi(uint16_t headerLength,
 
 	if (result != NRFX_SUCCESS)
 	{
-		gpio_pin_set_dt(&dwm_cs, false);
 		LOG_ERR("SPI transfer failed: %08x", result);
-		return -EIO;
+		ret = -EIO;
+		goto exit;
 	}
 
 	xfer.p_tx_buffer = bodyBuffer;
@@ -294,14 +310,15 @@ int writetospi(uint16_t headerLength,
 
 	if (result != NRFX_SUCCESS)
 	{
-		gpio_pin_set_dt(&dwm_cs, false);
 		LOG_ERR("SPI transfer failed: %08x", result);
-		return -EIO;
+		ret = -EIO;
+		goto exit;
 	}
 
+exit:
 	gpio_pin_set_dt(&dwm_cs, false);
-
-	return 0;
+	spi_busy = false;
+	return ret;
 }
 
 int writetospiwithcrc(uint16_t headerLength,
@@ -313,14 +330,6 @@ int writetospiwithcrc(uint16_t headerLength,
 	return 0;
 }
 
-/*
- * Function: readfromspi()
- *
- * Low level abstract function to read from the SPI
- * Takes two separate byte buffers for write header and read data
- * returns the offset into read buffer where first byte of read data
- * may be found, or returns 0
- */
 int readfromspi(uint16_t headerLength,
 		const uint8_t *headerBuffer,
 		uint16_t readLength,
@@ -329,8 +338,22 @@ int readfromspi(uint16_t headerLength,
 	const struct spi_nrfx_config *dev_config = spi->config;
 	nrfx_spi_xfer_desc_t xfer;
 	nrfx_err_t result;
+	int ret = 0;
 
-    	gpio_pin_set_dt(&dwm_cs, true);
+	__disable_irq();
+
+	if (!spi_initialized || headerLength == 0 || readLength == 0 || spi_busy)
+	{
+		LOG_ERR("Failed accessing SPI");
+		__enable_irq();
+		return -EIO;
+	}
+
+	spi_busy = true;
+
+	__enable_irq();
+
+	gpio_pin_set_dt(&dwm_cs, true);
 
 	xfer.p_tx_buffer = headerBuffer;
 	xfer.tx_length = headerLength;
@@ -340,9 +363,9 @@ int readfromspi(uint16_t headerLength,
 
 	if (result != NRFX_SUCCESS)
 	{
-		gpio_pin_set_dt(&dwm_cs, false);
 		LOG_ERR("SPI transfer failed: %08x", result);
-		return -EIO;
+		ret = -EIO;
+		goto exit;
 	}
 
 	xfer.p_tx_buffer = NULL;
@@ -353,12 +376,13 @@ int readfromspi(uint16_t headerLength,
 
 	if (result != NRFX_SUCCESS)
 	{
-		gpio_pin_set_dt(&dwm_cs, false);
 		LOG_ERR("SPI transfer failed: %08x", result);
-		return -EIO;
+		ret = -EIO;
+		goto exit;
 	}
 
+exit:
 	gpio_pin_set_dt(&dwm_cs, false);
-
-	return 0;
+	spi_busy = false;
+	return ret;
 }

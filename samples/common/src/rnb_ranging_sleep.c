@@ -13,6 +13,8 @@
 
 #include <kernel.h>
 
+#include "rnb_ranging_sleep.h"
+
 /* Wrapper function to be used by decadriver. Declared in deca_device_api.h */
 void deca_sleep(unsigned int time_ms)
 {
