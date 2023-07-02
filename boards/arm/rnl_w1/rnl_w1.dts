@@ -13,11 +13,6 @@
 	model = "RedNodeLabs W1";
 
 	chosen {
-		zephyr,console        = &uart0;
-		zephyr,shell-uart     = &uart0;
-		zephyr,uart-mcumgr    = &uart0;
-		zephyr,bt-mon-uart    = &uart0;
-		zephyr,bt-c2h-uart    = &uart0;
 		zephyr,sram           = &sram0;
 		zephyr,flash          = &flash0;
 		zephyr,code-partition = &slot0_partition;
@@ -102,15 +97,6 @@
 	status = "okay";
 };
 
-&uart0 {
-	compatible = "nordic,nrf-uarte";
-	status = "okay";
-	current-speed = <115200>;
-	pinctrl-0 = <&uart0_default>;
-	pinctrl-1 = <&uart0_sleep>;
-	pinctrl-names = "default", "sleep";
-};
-
 &i2c0 {
 	compatible = "nordic,nrf-twim";
 	status = "okay";
@@ -160,15 +146,11 @@
 		};
 		slot0_partition: partition@c000 {
 			label = "image-0";
-			reg = <0x0000C000 0x32000>;
+			reg = <0x0000C000 0x37000>;
 		};
-		slot1_partition: partition@3e000 {
+		slot1_partition: partition@43000 {
 			label = "image-1";
-			reg = <0x0003E000 0x32000>;
-		};
-		scratch_partition: partition@70000 {
-			label = "image-scratch";
-			reg = <0x00070000 0xA000>;
+			reg = <0x00043000 0x37000>;
 		};
 		storage_partition: partition@7a000 {
 			label = "storage";

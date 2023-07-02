@@ -13,12 +13,8 @@ CONFIG_HW_STACK_PROTECTION=y
 # enable GPIO
 CONFIG_GPIO=y
 
-# enable uart driver
+# enable serial driver
 CONFIG_SERIAL=y
-
-# enable console
-CONFIG_CONSOLE=y
-CONFIG_UART_CONSOLE=y
 
 # additional board options
 CONFIG_GPIO_AS_PINRESET=y

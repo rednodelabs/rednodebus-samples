@@ -211,7 +211,7 @@ static int batt_stat_setup(void)
 		}
 		else
 		{
-			batt_stat_changed(NULL, NULL, NULL);
+			batt_stat_changed(NULL, NULL, 0);
 
 			LOG_INF("Set up BATTERY STAT LED at %s pin %d\n", batt_stat_led.port->name, batt_stat_led.pin);
 		}

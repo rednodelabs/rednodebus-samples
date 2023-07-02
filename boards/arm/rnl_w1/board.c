@@ -3,10 +3,10 @@
  */
 
 #include <zephyr/init.h>
-#include <drivers/gpio.h>
+#include <zephyr/drivers/gpio.h>
 
-#define RNL_W1_LED_STRIP_EN_PIN		19
-#define RNL_W1_LED_STRIP_EN_GPIO	gpio0
+#define RNL_W1_LED_STRIP_EN_PIN	19
+#define RNL_W1_LED_STRIP_EN_GPIO gpio0
 
 void board_rnl_w1_led_strip_enable();
 void board_rnl_w1_led_strip_disable();

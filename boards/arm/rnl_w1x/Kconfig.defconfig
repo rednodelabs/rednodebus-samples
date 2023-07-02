@@ -14,8 +14,4 @@ config BT_CTLR
 config I2C
 	default SENSOR
 
-config SPI
-	default y
-	depends on IEEE802154
-
 endif # BOARD_RNL_W1X

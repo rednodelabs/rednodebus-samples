@@ -61,6 +61,8 @@ The `coprocessor` sample is compatible with the following boards:
 - `qorvo_dwm3001c_dev`
 - `rnl_w1`
 
+The fastest way to start is programming the simplest sample in the nodes ([RNB Node](samples/rednodebus_node/README.md)). Compiled hex files of the samples are available for some supported boards in [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex). To check supported boards and building flags, the `sample.yaml` files of each sample can be used as reference.
+
 In general, other custom boards using the `nRF52832_QFAA` (with or without `decawave_dw1000`), `nRF52833_QIAA` (with or without `qorvo_dw3000`) and `nRF52840_QIAA` SOCs should work with the library; but only the boards mentioned aboved have been tested. Included [board's devicetrees](boards) can be used as a base for porting to other boards.
 
 ## Integrating RedNodeBus with the OpenThread Border Router
@@ -208,9 +210,9 @@ Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `ima
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EbyTjpQgfQVFjAhjRWB1PsYBxv_WF5YnStuEJIec6ie0_g?e=bkm9M3).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EZh5ZQwPuq9Jh9yUb5rS9gQBOGmo4GHrSPDzcCRZZ0pmaw?e=sYmCDF).
 
 ## Documentation
 
 - [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX)
-- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EbyTjpQgfQVFjAhjRWB1PsYBxv_WF5YnStuEJIec6ie0_g?e=bkm9M3)
+- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EZh5ZQwPuq9Jh9yUb5rS9gQBOGmo4GHrSPDzcCRZZ0pmaw?e=sYmCDF)
