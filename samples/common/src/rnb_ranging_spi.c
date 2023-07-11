@@ -276,7 +276,7 @@ int writetospi(uint16_t headerLength,
 
 	__disable_irq();
 
-	if (!spi_initialized || headerLength == 0 || bodyLength == 0 || spi_busy)
+	if (!spi_initialized || spi_busy)
 	{
 		LOG_ERR("Failed accessing SPI");
 		__enable_irq();
@@ -342,7 +342,7 @@ int readfromspi(uint16_t headerLength,
 
 	__disable_irq();
 
-	if (!spi_initialized || headerLength == 0 || readLength == 0 || spi_busy)
+	if (!spi_initialized || spi_busy)
 	{
 		LOG_ERR("Failed accessing SPI");
 		__enable_irq();
