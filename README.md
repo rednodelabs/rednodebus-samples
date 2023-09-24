@@ -227,4 +227,4 @@ The corresponding version can be downloaded [here](https://netorgft3728920-my.sh
 ## Documentation
 
 - [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX)
-- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EQ9wu8qMMlpOug5MPgjRR3EB6La5tQ_QGXlqoAU9SeG_Eg?e=82TwJb)
+- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/Ef--DlzSVfJDlxHhZ2OzdqIBZERjhkz8dkxDaxn6POlI2g?e=VqPD2l)

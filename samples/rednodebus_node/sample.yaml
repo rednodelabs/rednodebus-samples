@@ -25,18 +25,14 @@ tests:
       - nrf52840dk_nrf52840
       - decawave_dwm1001_dev
       - qorvo_dwm3001c_dev
-      - rnl_w1
-      - rnl_w1x
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-debug.conf
     build_only: true
     tags: ci_build
   sample.rednodebus_node.rnb.ranging_diag:
-    platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev rnl_w1 rnl_w1x
+    platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev qorvo_dwm3001c_dev rnl_w1
     integration_platforms:
       - decawave_dwm1001_dev
       - qorvo_dwm3001c_dev
-      - rnl_w1
-      - rnl_w1x
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
     build_only: true
     tags: ci_build
