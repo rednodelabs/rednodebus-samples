@@ -20,18 +20,17 @@ tests:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
       - nrf52840dongle_nrf52840
-      # - qorvo_dwm3001c_dev
-      # - rnl_w1
+      - qorvo_dwm3001c_dev
+      - rnl_w1
     extra_args: CONF_FILE=prj.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf;../common/overlay-rnb-ranging-diagnostic.conf
     build_only: true
     tags: ci_build
   sample.coprocessor.rnb.usb.mcuboot:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
-      # - nrf52840dongle_nrf52840
       - qorvo_dwm3001c_dev
       - rnl_w1
     extra_args: CONF_FILE=prj_mcuboot.conf
@@ -39,11 +38,10 @@ tests:
     build_only: true
     tags: ci_private_build
   sample.coprocessor.rnb.ranging_diagnostic.usb.mcuboot:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
-      # - nrf52840dongle_nrf52840
       - qorvo_dwm3001c_dev
       - rnl_w1
     extra_args: CONF_FILE=prj_mcuboot.conf
