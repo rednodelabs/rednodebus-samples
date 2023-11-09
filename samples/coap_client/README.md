@@ -10,6 +10,7 @@ west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf"
 To test the CoAP client, the `coap_server.py` file located in the `script` folder can be used.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the server needs to be specified in the coap_clients_util.c file:
+
 ```
 #if HARDCODED_UNICAST_IP
 static struct sockaddr_in6 unique_local_addr = {

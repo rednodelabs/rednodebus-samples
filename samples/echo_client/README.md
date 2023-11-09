@@ -12,7 +12,6 @@ To test the echo client, the `echo_server.py` file located in the `script` folde
 Using the `echo_server.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the echo service can be tested.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the `echo_server.py` can be specified in the `common.h` file:
-```
 
 For example, if the server runs in the following local IP (default Docker IP):
 ```

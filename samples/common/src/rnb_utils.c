@@ -12,6 +12,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include <zephyr.h>
 #include <errno.h>
 #include <stdio.h>
+#include <net/sntp.h>
 
 #include <net/ieee802154_radio.h>
 #include <net/openthread.h>
@@ -27,6 +28,11 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #define REDNODEBUS_UTILS_STACK_SIZE 512
 #define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8
 #define REDNODEBUS_UTILS_THREAD_PRIORITY 3
+#define REDNODEBUS_SNTP_STACK_SIZE 1024
+#define CONFIG_IPV6_ADDR_SNTP "2001:0db8:0001:ffff:0000:0000:ac13:0002"
+#define CONFIG_IPV6_ADDR_SNTP_PORT 123
+#define REDNODEBUS_SNTP_THREAD_PRIORITY 4
+#define REDNODEBUS_SNTP_PERIOD 300000
 #define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
 
 /* Convenience defines for RADIO */
@@ -50,10 +56,21 @@ static struct k_thread rnb_utils_thread;
 /* RedNodeBus utils event fifo queue. */
 static struct k_fifo rnb_utils_event_fifo;
 
+/* RedNodeBus SNTP thread. */
+static struct k_thread rnb_sntp_thread;
+
+/* RedNodeBus SNTP stack. */
+static K_THREAD_STACK_DEFINE(rnb_sntp_stack, REDNODEBUS_SNTP_STACK_SIZE);
+
+/* SNTP variables. */
+static struct sntp_time sntp_time;
+static int64_t sntp_reference_uptime;
+static bool sntp_synchronized;
+
 /* RedNodeBus OT start work. */
-struct k_work ot_init_work;
-struct k_work ot_start_work;
-struct k_work ot_stop_work;
+static struct k_work ot_init_work;
+static struct k_work ot_start_work;
+static struct k_work ot_stop_work;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
 static struct rednodebus_user_config rnb_user_config;
@@ -459,9 +476,79 @@ static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
 	}
 }
 
+static void rnb_sntp_process_thread(void *arg1, void *arg2, void *arg3)
+{
+	ARG_UNUSED(arg1);
+	ARG_UNUSED(arg2);
+	ARG_UNUSED(arg3);
+
+	struct sntp_ctx ctx;
+	struct sockaddr_in6 addr6;
+
+	int rv;
+
+	/* ipv6 */
+	memset(&addr6, 0, sizeof(addr6));
+	addr6.sin6_family = AF_INET6;
+	addr6.sin6_port = htons(CONFIG_IPV6_ADDR_SNTP_PORT);
+	inet_pton(AF_INET6, CONFIG_IPV6_ADDR_SNTP, &addr6.sin6_addr);
+
+	sntp_synchronized = false;
+
+	while (1)
+	{
+		if (is_rnb_connected())
+		{
+			rv = sntp_init(&ctx, (struct sockaddr *)&addr6,
+				       sizeof(struct sockaddr_in6));
+			if (rv < 0)
+			{
+				LOG_ERR("Failed to init SNTP IPv6 ctx: %d", rv);
+			}
+			else
+			{
+				LOG_INF("Sending SNTP IPv6 request...");
+				rv = sntp_query(&ctx, 4 * MSEC_PER_SEC, &sntp_time);
+				if (rv < 0)
+				{
+					LOG_ERR("SNTP IPv6 request: %d", rv);
+				}
+				else
+				{
+					sntp_reference_uptime = k_uptime_get();
+					sntp_synchronized = true;
+					LOG_INF("time since Epoch: high word: %u, low word: %u, fraction: %u",
+						(uint32_t)(sntp_time.seconds >> 32), (uint32_t)sntp_time.seconds, sntp_time.fraction);
+				}
+			}
+			sntp_close(&ctx);
+		}
+		if (sntp_synchronized)
+		{
+			k_sleep(K_MSEC(REDNODEBUS_SNTP_PERIOD));
+		}
+		else
+		{
+			k_sleep(K_MSEC(10000));
+		}
+	}
+}
+
 bool is_rnb_connected(void)
 {
 	return rnb_connected;
+}
+
+int64_t rnb_get_unix_time(void)
+{
+	int64_t unix_time_seconds = -1;
+
+	if (sntp_synchronized)
+	{
+		unix_time_seconds = ((k_uptime_get() - sntp_reference_uptime) / 1000) + sntp_time.seconds;
+	}
+
+	return unix_time_seconds;
 }
 
 #if defined(CONFIG_DK_LIBRARY)
@@ -540,6 +627,19 @@ int init_rnb(void)
 			K_NO_WAIT);
 
 	k_thread_name_set(&rnb_utils_thread, "rnb_utils_thread");
+
+	k_thread_create(&rnb_sntp_thread,
+			rnb_sntp_stack,
+			REDNODEBUS_SNTP_STACK_SIZE,
+			rnb_sntp_process_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(REDNODEBUS_SNTP_THREAD_PRIORITY),
+			0,
+			K_NO_WAIT);
+
+	k_thread_name_set(&rnb_sntp_thread, "rnb_sntp_thread");
 
 	k_work_init(&ot_init_work, ot_init_work_handler);
 	k_work_init(&ot_start_work, ot_start_work_handler);

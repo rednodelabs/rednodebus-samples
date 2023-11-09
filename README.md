@@ -29,7 +29,7 @@ west update
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
 ## RNB Lib
-The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX).
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWNBbUEbA5tLpctNqfadtgkBzdcLokwpXBGhRz0bFCw9QQ?e=5FbUsv).
 
 To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-documentation).
 
@@ -202,6 +202,10 @@ services:
       - RNB_OTBR_DFU_BOARD=BOARD_NAME
       - RNB_OTBR_DFU_UART=0
       - RNB_OTBR_DFU_RANGING_DIAG=0
+    networks:
+      rnb-otbr-nw:
+        ipv4_address: 172.19.0.2
+
 
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
@@ -215,6 +219,16 @@ services:
       - WEB_UI_PORT=3000
       - MQTT_HOST=rnb-otbr
       - MQTT_PORT=1883
+    networks:
+      rnb-otbr-nw:
+        ipv4_address: 172.19.0.3
+
+networks:
+  rnb-otbr-nw:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.19.0.0/16
 ```
 Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used) and change `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`. If ranging diagnostics are desired set `RNB_OTBR_DFU_RANGING_DIAG` to `1` (only for testing purposes, all other nodes in the system must be compiled with this option for the system to operate properly).
 
@@ -222,9 +236,9 @@ Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `ima
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EQ9wu8qMMlpOug5MPgjRR3EB6La5tQ_QGXlqoAU9SeG_Eg?e=82TwJb).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EebJHikifYVOg7xbL4PFhOQBBKt57dpfLt9V1f0SfrBbWw).
 
 ## Documentation
 
-- [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EfDV7vcIawRAjGb4qzTEMTcBGJdEeMM1qc3qTCcwW64WeQ?e=tifiJX)
-- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/Ef--DlzSVfJDlxHhZ2OzdqIBZERjhkz8dkxDaxn6POlI2g?e=VqPD2l)
+- [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWNBbUEbA5tLpctNqfadtgkBzdcLokwpXBGhRz0bFCw9QQ?e=5FbUsv)
+- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EebJHikifYVOg7xbL4PFhOQBBKt57dpfLt9V1f0SfrBbWw)
