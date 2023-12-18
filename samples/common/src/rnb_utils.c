@@ -10,6 +10,7 @@
 LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 
 #include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <errno.h>
 #include <stdio.h>
 #include <net/sntp.h>
@@ -32,7 +33,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #define CONFIG_IPV6_ADDR_SNTP "2001:0db8:0001:ffff:0000:0000:ac13:0002"
 #define CONFIG_IPV6_ADDR_SNTP_PORT 123
 #define REDNODEBUS_SNTP_THREAD_PRIORITY 4
-#define REDNODEBUS_SNTP_PERIOD 300000
+#define REDNODEBUS_SNTP_UPDATE_TRIGGER "CLOCK"
 #define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
 
 /* Convenience defines for RADIO */
@@ -42,8 +43,8 @@ struct rednodebus_utils_event
 {
 	void *fifo_reserved; /* 1st word reserved for use by fifo. */
 	const struct device *dev;
-	enum rednodebus_user_event event;
-	struct rednodebus_user_event_params params;
+	enum rednodebus_user_event rnb_user_event;
+	struct rednodebus_user_event_params rnb_user_event_params;
 	bool in_use;
 };
 
@@ -66,6 +67,7 @@ static K_THREAD_STACK_DEFINE(rnb_sntp_stack, REDNODEBUS_SNTP_STACK_SIZE);
 static struct sntp_time sntp_time;
 static int64_t sntp_reference_uptime;
 static bool sntp_synchronized;
+static K_SEM_DEFINE(sntp_sem, 0, 1);
 
 /* RedNodeBus OT start work. */
 static struct k_work ot_init_work;
@@ -73,7 +75,7 @@ static struct k_work ot_start_work;
 static struct k_work ot_stop_work;
 
 static struct rednodebus_utils_event rnb_utils_events[REDNODEBUS_UTILS_EVENT_BUFFER_SIZE];
-static struct rednodebus_user_config rnb_user_config;
+__WEAK struct rednodebus_user_config rnb_user_config = {.role = REDNODEBUS_USER_ROLE_UNDEFINED, .sync_active_period_ms = 2000, .sync_sleep_period_ms = 10000};
 static struct rednodebus_user_runtime_config rnb_user_runtime_config;
 static bool rnb_configured;
 static bool rnb_started;
@@ -85,14 +87,14 @@ static void print_rnb_role(const uint8_t role);
 static void print_rnb_uwb_mode(const uint8_t uwb_mode);
 static void print_rnb_ranging_mode(const uint8_t ranging_mode);
 static void handle_rnb_user_event(const struct device *dev,
-				  enum rednodebus_user_event evt,
+				  const enum rednodebus_user_event evt,
 				  void *event_params);
 static void handle_rnb_user_rxtx_signal(const struct device *dev,
 					enum rednodebus_user_rxtx_signal sig,
 					bool active);
 static void process_rnb_utils_event(const struct device *dev,
-				    const enum rednodebus_user_event event,
-				    const struct rednodebus_user_event_params *params);
+				    enum rednodebus_user_event evt,
+				    const struct rednodebus_user_event_params *rnb_user_event_params);
 static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
 static void ot_init_work_handler(struct k_work *item);
 static void ot_start_work_handler(struct k_work *item);
@@ -140,9 +142,24 @@ static void ot_stop_work_handler(struct k_work *item)
 	}
 }
 
-__WEAK void rnb_utils_handle_new_state(const struct rednodebus_user_event_state *event_state)
+__WEAK void rnb_utils_handle_new_state(const struct rednodebus_user_event_params_state *state)
 {
 	/* Intentionally empty. */
+}
+
+__WEAK void rnb_utils_handle_user_payload(const uint8_t user_payload_length,
+					  const struct rednodebus_user_event_params_user_payload *user_payload)
+{
+	/* Example receiving a command via user payload. */
+	if (user_payload_length == 5)
+	{
+		char sntp_trigger_bfr[] = REDNODEBUS_SNTP_UPDATE_TRIGGER;
+		if (!memcmp(user_payload, sntp_trigger_bfr, 5))
+		{
+			k_sem_give(&sntp_sem);
+			LOG_INF("SNTP Update Trigger Received");
+		}
+	}
 }
 
 void rnb_utils_get_euid(uint64_t *euid)
@@ -321,9 +338,12 @@ static void print_rnb_ranging_mode(const uint8_t ranging_mode)
 }
 
 static void handle_rnb_user_event(const struct device *dev,
-				  enum rednodebus_user_event evt,
+				  const enum rednodebus_user_event evt,
 				  void *event_params)
 {
+	const struct rednodebus_user_event_params *rnb_user_event_params = (const struct rednodebus_user_event_params *)event_params;
+	const uint8_t event_size = sizeof(rnb_user_event_params->event_params_length) + rnb_user_event_params->event_params_length;
+
 	for (uint8_t i = 0; i < ARRAY_SIZE(rnb_utils_events); i++)
 	{
 		if (rnb_utils_events[i].in_use)
@@ -334,18 +354,19 @@ static void handle_rnb_user_event(const struct device *dev,
 		rnb_utils_events[i].in_use = true;
 
 		rnb_utils_events[i].dev = dev;
-		rnb_utils_events[i].event = evt;
 
-		memcpy(&rnb_utils_events[i].params,
-		       event_params,
-		       sizeof(struct rednodebus_user_event_params));
+		rnb_utils_events[i].rnb_user_event = evt;
+
+		memcpy(&rnb_utils_events[i].rnb_user_event_params,
+		       rnb_user_event_params,
+		       event_size);
 
 		k_fifo_put(&rnb_utils_event_fifo, &rnb_utils_events[i]);
 
 		return;
 	}
 
-	LOG_ERR("Not enough events allocated for rnb user event %u", evt);
+	LOG_ERR("Not enough events allocated for rnb user event id %u", evt);
 }
 
 static void handle_rnb_user_rxtx_signal(const struct device *dev,
@@ -368,34 +389,35 @@ static void handle_rnb_user_rxtx_signal(const struct device *dev,
 }
 
 static void process_rnb_utils_event(const struct device *dev,
-				    const enum rednodebus_user_event event,
-				    const struct rednodebus_user_event_params *params)
+				    enum rednodebus_user_event evt,
+				    const struct rednodebus_user_event_params *rnb_user_event_params)
 {
-	const struct rednodebus_user_event_state *event_state;
+	const struct rednodebus_user_event_params_state *state;
+	const struct rednodebus_user_event_params_user_payload *user_payload;
 	int ret;
 
-	switch (event)
+	switch (evt)
 	{
 	case REDNODEBUS_USER_EVENT_NEW_STATE:
 		LOG_DBG("RNB user event new state");
 
-		event_state = &params->state;
+		state = &rnb_user_event_params->state;
 
-		print_rnb_state(event_state->state);
+		print_rnb_state(state->state);
 
-		LOG_INF("RNB ID: 0x%04X", event_state->rnb_id);
+		LOG_INF("RNB ID: 0x%04X", state->rnb_id);
 
-		if (event_state->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
+		if (state->state > REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
 		{
-			if (event_state->role != REDNODEBUS_USER_ROLE_UNDEFINED)
+			if (state->role != REDNODEBUS_USER_ROLE_UNDEFINED)
 			{
-				print_rnb_role(event_state->role);
+				print_rnb_role(state->role);
 			}
 
-			LOG_INF("RNB period ms: %u", event_state->period_ms);
+			LOG_INF("RNB period ms: %u", state->period_ms);
 		}
 
-		if (event_state->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
+		if (state->state == REDNODEBUS_USER_BUS_STATE_STOPPED)
 		{
 			if (!rnb_configured)
 			{
@@ -429,28 +451,33 @@ static void process_rnb_utils_event(const struct device *dev,
 				// ret = REDNODEBUS_API(dev)->set_rnb_user_settings(dev, &rnb_user_settings);
 			}
 		}
-		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED)
+		else if (state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED)
 		{
 			rnb_connected = true;
 
 			k_work_submit(&ot_start_work);
 		}
-		else if (event_state->state == REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
+		else if (state->state == REDNODEBUS_USER_BUS_STATE_UNSYNCHRONIZED)
 		{
 			k_work_submit(&ot_stop_work);
 
 			rnb_connected = false;
 		}
 
-		if ((event_state->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
-		    (event_state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
+		if ((state->ranging_mode != REDNODEBUS_USER_RANGING_MODE_DISABLED) &&
+		    (state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
 		{
-			print_rnb_uwb_mode(event_state->uwb_mode);
-			print_rnb_ranging_mode(event_state->ranging_mode);
+			print_rnb_uwb_mode(state->uwb_mode);
+			print_rnb_ranging_mode(state->ranging_mode);
 		}
 
-		rnb_utils_handle_new_state(event_state);
+		rnb_utils_handle_new_state(state);
 
+		break;
+	case REDNODEBUS_USER_EVENT_USER_PAYLOAD:
+		user_payload = &rnb_user_event_params->user_payload;
+
+		rnb_utils_handle_user_payload(rnb_user_event_params->event_params_length, user_payload);
 		break;
 	default:
 		LOG_WRN("RNB user event: unknown");
@@ -470,7 +497,9 @@ static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3)
 	{
 		rnb_utils_event = k_fifo_get(&rnb_utils_event_fifo, K_FOREVER);
 
-		process_rnb_utils_event(rnb_utils_event->dev, rnb_utils_event->event, &rnb_utils_event->params);
+		process_rnb_utils_event(rnb_utils_event->dev,
+					rnb_utils_event->rnb_user_event,
+					&rnb_utils_event->rnb_user_event_params);
 
 		rnb_utils_event->in_use = false;
 	}
@@ -525,7 +554,7 @@ static void rnb_sntp_process_thread(void *arg1, void *arg2, void *arg3)
 		}
 		if (sntp_synchronized)
 		{
-			k_sleep(K_MSEC(REDNODEBUS_SNTP_PERIOD));
+			k_sem_take(&sntp_sem, K_FOREVER);
 		}
 		else
 		{
@@ -583,7 +612,7 @@ int init_rnb(void)
 		LOG_WRN("Cannot init RedNodeBus LEDs");
 	}
 
-#if defined(CONFIG_DK_LIBRARY)
+#if defined(CONFIG_DK_LIBRARY) && !defined(CONFIG_COAP_UTILS)
 	ret = dk_buttons_init(on_button_changed);
 	if (ret)
 	{
@@ -600,10 +629,6 @@ int init_rnb(void)
 	rnb_started = false;
 	rnb_connected = false;
 	ot_started = false;
-
-	rnb_user_config.role = REDNODEBUS_USER_ROLE_UNDEFINED;
-	rnb_user_config.sync_active_period_ms = 2000;
-	rnb_user_config.sync_sleep_period_ms = 10000;
 
 	rnb_user_runtime_config.energy_save_mode_enabled = true;
 #if defined(CONFIG_REDNODERANGING)

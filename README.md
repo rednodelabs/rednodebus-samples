@@ -116,6 +116,8 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv6.conf.all.forwarding=1
       - net.ipv4.conf.all.forwarding=1
+      - net.netfilter.nf_conntrack_udp_timeout=1200
+      - net.netfilter.nf_conntrack_udp_timeout_stream=1200
     volumes:
       - /home/pi/rnl_certs:/app/config
       - /dev:/dev
@@ -123,6 +125,9 @@ services:
       - RCP_FD=/dev/ttyACM0
       - MQTT_HOST=localhost
       - MQTT_PORT=1883
+    networks:
+      rnb-otbr-nw:
+        ipv4_address: 172.19.0.2
 
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
@@ -133,9 +138,18 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - WEB_UI_PORT=3000
       - MQTT_HOST=rnb-otbr
       - MQTT_PORT=1883
+    networks:
+      rnb-otbr-nw:
+        ipv4_address: 172.19.0.3
+
+networks:
+  rnb-otbr-nw:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.19.0.0/16
 ```
 
 Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used).
@@ -191,6 +205,8 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv6.conf.all.forwarding=1
       - net.ipv4.conf.all.forwarding=1
+      - net.netfilter.nf_conntrack_udp_timeout=1200
+      - net.netfilter.nf_conntrack_udp_timeout_stream=1200
     volumes:
       - /home/pi/rnl_certs:/app/config
       - /dev:/dev
@@ -216,7 +232,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - WEB_UI_PORT=3000
       - MQTT_HOST=rnb-otbr
       - MQTT_PORT=1883
     networks:
@@ -236,9 +251,9 @@ Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `ima
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EebJHikifYVOg7xbL4PFhOQBBKt57dpfLt9V1f0SfrBbWw).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EedNfrVqV_xDj_XAf63u8q4BvzvoVIRBdpE716DOCL1veQ?e=FsqdFA).
 
 ## Documentation
 
 - [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWNBbUEbA5tLpctNqfadtgkBzdcLokwpXBGhRz0bFCw9QQ?e=5FbUsv)
-- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EebJHikifYVOg7xbL4PFhOQBBKt57dpfLt9V1f0SfrBbWw)
+- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EedNfrVqV_xDj_XAf63u8q4BvzvoVIRBdpE716DOCL1veQ?e=FsqdFA)

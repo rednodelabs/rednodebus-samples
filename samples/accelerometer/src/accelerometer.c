@@ -43,9 +43,9 @@ LOG_MODULE_REGISTER(net_accelerometer_sample, LOG_LEVEL_DBG);
 
 static uint8_t rnb_role;
 
-void rnb_utils_handle_new_state(const struct rednodebus_user_event_state *event_state)
+void rnb_utils_handle_new_state(const struct rednodebus_user_event_params_state *state)
 {
-	rnb_role = event_state->role;
+	rnb_role = state->role;
 }
 
 int32_t packet_buffer[10];
