@@ -29,9 +29,9 @@ west update
 > To update to a newer release, remember to perform both a `git pull` in the `rednodebus-samples` folder inside `zephyr-workspace` and a `west update` to update the dependencies.
 
 ## RNB Lib
-The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWNBbUEbA5tLpctNqfadtgkBzdcLokwpXBGhRz0bFCw9QQ?e=5FbUsv).
+The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:f:/g/personal/info_rednodelabs_com/EtkJVPIkzXdIto2uDBEu8cEB3RYr4fQToy8okK3j-pmCig?e=nxpn0N).
 
-To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api-documentation).
+To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api).
 
 All samples, except the `coprocessor`, `battery` and `accelerometer`, are compatible with the following boards:
 - `decawave_dwm1001_dev` (data bus and ranging)
@@ -251,9 +251,9 @@ Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `ima
 
 The MQTT API can be also used to interact with the system. For further details, read the API documentation.
 
-The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EedNfrVqV_xDj_XAf63u8q4BvzvoVIRBdpE716DOCL1veQ?e=FsqdFA).
+The corresponding version can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:f:/g/personal/info_rednodelabs_com/Eqjw1ideFihIqt1Ppfcf7VwBLwVPudZRmk5ttXRzvPr1Dw?e=dzO8XQ).
 
 ## Documentation
 
-- [RNB Lib](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EWNBbUEbA5tLpctNqfadtgkBzdcLokwpXBGhRz0bFCw9QQ?e=5FbUsv)
-- [MQTT API](https://netorgft3728920-my.sharepoint.com/:b:/g/personal/info_rednodelabs_com/EedNfrVqV_xDj_XAf63u8q4BvzvoVIRBdpE716DOCL1veQ?e=FsqdFA)
+- [RNB Lib](https://netorgft3728920-my.sharepoint.com/:f:/g/personal/info_rednodelabs_com/EtkJVPIkzXdIto2uDBEu8cEB3RYr4fQToy8okK3j-pmCig?e=nxpn0N)
+- [MQTT API](https://netorgft3728920-my.sharepoint.com/:f:/g/personal/info_rednodelabs_com/Eqjw1ideFihIqt1Ppfcf7VwBLwVPudZRmk5ttXRzvPr1Dw?e=dzO8XQ)

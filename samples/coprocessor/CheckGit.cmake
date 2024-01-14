@@ -35,7 +35,7 @@ function(CheckCoprocessorGitVersion)
 
     message(STATUS "COPROCESSOR_GIT_HASH ${COPROCESSOR_GIT_HASH}")
 
-    CheckCoprocessorGitRead(GIT_HASH_CACHE)
+    CheckCoprocessorGitRead(GIT_TAG_CACHE)
     if (NOT EXISTS ${coprocessor_post_configure_dir})
         file(MAKE_DIRECTORY ${coprocessor_post_configure_dir})
     endif ()
@@ -44,14 +44,14 @@ function(CheckCoprocessorGitVersion)
         file(COPY ${coprocessor_pre_configure_dir}/src/rnb_coprocessor_version.h DESTINATION ${coprocessor_post_configure_dir})
     endif()
 
-    if (NOT DEFINED GIT_HASH_CACHE)
-        set(GIT_HASH_CACHE "INVALID")
+    if (NOT DEFINED GIT_TAG_CACHE)
+        set(GIT_TAG_CACHE "INVALID")
     endif ()
 
     # Only update the rnb_coprocessor_version.c if the hash has changed. This will
     # prevent us from rebuilding the project more than we need to.
-    if (NOT "${COPROCESSOR_GIT_HASH}" STREQUAL "${GIT_HASH_CACHE}" OR NOT EXISTS ${coprocessor_post_configure_file})
-        # Set che GIT_HASH_CACHE variable the next build won't have
+    if (NOT "${COPROCESSOR_GIT_HASH}" STREQUAL "${GIT_TAG_CACHE}" OR NOT EXISTS ${coprocessor_post_configure_file})
+        # Set che GIT_TAG_CACHE variable the next build won't have
         # to regenerate the source file.
         CheckCoprocessorGitWrite(${COPROCESSOR_GIT_HASH})
 
@@ -66,7 +66,7 @@ function(CheckCoprocessorGitSetup)
         -DRUN_CHECK_GIT_VERSION=1
         -Dcoprocessor_pre_configure_dir=${coprocessor_pre_configure_dir}
         -Dcoprocessor_post_configure_file=${coprocessor_post_configure_dir}
-        -DGIT_HASH_CACHE=${GIT_HASH_CACHE}
+        -DGIT_TAG_CACHE=${GIT_TAG_CACHE}
         -P ${CURRENT_LIST_DIR}/CheckGit.cmake
         BYPRODUCTS ${coprocessor_post_configure_file}
         )
