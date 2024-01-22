@@ -53,6 +53,6 @@ manifest:
     path: modules/lib/openthread
     revision: rednodelabs/v1.0.5
   - name: rednodebus-release
-    revision: v1.1.1
+    revision: v1.2.0
   self:
     west-commands: nrf/scripts/west-commands.yml

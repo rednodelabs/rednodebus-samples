@@ -35,6 +35,9 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #define REDNODEBUS_SNTP_THREAD_PRIORITY 4
 #define REDNODEBUS_SNTP_UPDATE_TRIGGER "CLOCK"
 #define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
+#define REDNODEBUS_SIMULATED_DISCONNECTION 0
+#define REDNODEBUS_SIMULATED_DISCONNECTION_PERIOD_S 10
+#define REDNODEBUS_SIMULATED_DISCONNECTION_THREAD_PRIORITY 0
 
 /* Convenience defines for RADIO */
 #define REDNODEBUS_API(dev) ((const struct ieee802154_radio_api *const)(dev)->api)
@@ -50,9 +53,15 @@ struct rednodebus_utils_event
 
 /* RedNodeBus utils stack. */
 static K_THREAD_STACK_DEFINE(rnb_utils_stack, REDNODEBUS_UTILS_STACK_SIZE);
+#if REDNODEBUS_SIMULATED_DISCONNECTION
+static K_THREAD_STACK_DEFINE(rnb_simulated_disconnection_stack, REDNODEBUS_UTILS_STACK_SIZE);
+#endif
 
 /* RedNodeBus utils thread control block. */
 static struct k_thread rnb_utils_thread;
+#if REDNODEBUS_SIMULATED_DISCONNECTION
+static struct k_thread rnb_simulated_disconnection_thread;
+#endif
 
 /* RedNodeBus utils event fifo queue. */
 static struct k_fifo rnb_utils_event_fifo;
@@ -69,8 +78,22 @@ static int64_t sntp_reference_uptime;
 static bool sntp_synchronized;
 static K_SEM_DEFINE(sntp_sem, 0, 1);
 
+#if !defined(CONFIG_REDNODEBUS_WATCHDOG) && defined(CONFIG_WATCHDOG)
+#define REDNODEBUS_WDT_STACK_SIZE 256
+#define REDNODEBUS_WDT_THREAD_PRIORITY 5
+
+/* RedNodeBus SNTP thread. */
+static struct k_thread rnb_wdt_thread;
+
+/* RedNodeBus SNTP stack. */
+static K_THREAD_STACK_DEFINE(rnb_wdt_stack, REDNODEBUS_WDT_STACK_SIZE);
+
+static void rnb_wdt_process_thread(void *arg1, void *arg2, void *arg3);
+#endif
+
 /* RedNodeBus OT start work. */
 static struct k_work ot_init_work;
+static struct k_work ot_deinit_work;
 static struct k_work ot_start_work;
 static struct k_work ot_stop_work;
 
@@ -80,6 +103,7 @@ static struct rednodebus_user_runtime_config rnb_user_runtime_config;
 static bool rnb_configured;
 static bool rnb_started;
 static bool rnb_connected;
+static bool rnb_initialized = false;
 static bool ot_started;
 
 static void print_rnb_state(const uint8_t state);
@@ -96,7 +120,11 @@ static void process_rnb_utils_event(const struct device *dev,
 				    enum rednodebus_user_event evt,
 				    const struct rednodebus_user_event_params *rnb_user_event_params);
 static void rnb_utils_process_thread(void *arg1, void *arg2, void *arg3);
+#if REDNODEBUS_SIMULATED_DISCONNECTION
+static void rnb_simulated_disconnection_process_thread(void *arg1, void *arg2, void *arg3);
+#endif
 static void ot_init_work_handler(struct k_work *item);
+static void ot_deinit_work_handler(struct k_work *item);
 static void ot_start_work_handler(struct k_work *item);
 static void ot_stop_work_handler(struct k_work *item);
 
@@ -104,7 +132,65 @@ static void ot_init_work_handler(struct k_work *item)
 {
 	ARG_UNUSED(item);
 
-	rnb_utils_start();
+	otError error;
+	struct openthread_context *ctx;
+
+	if (rnb_started)
+	{
+		return;
+	}
+
+	ctx = openthread_get_default_context();
+
+	openthread_api_mutex_lock(ctx);
+
+	error = otIp6SetEnabled(ctx->instance, true);
+
+	if (error == OT_ERROR_NONE)
+	{
+		rnb_started = true;
+	}
+
+#if defined(CONFIG_SOC_NRF52840)
+	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(ctx->instance, 8); // +8 dBm
+#else
+	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
+	otPlatRadioSetTransmitPower(ctx->instance, 4); // +4 dBm
+#endif
+
+	openthread_api_mutex_unlock(ctx);
+}
+
+static void ot_deinit_work_handler(struct k_work *item)
+{
+	otError error;
+	struct openthread_context *ctx;
+
+	if (!rnb_started)
+	{
+		return;
+	}
+
+	ctx = openthread_get_default_context();
+
+	openthread_api_mutex_lock(ctx);
+
+	error = otThreadSetEnabled(ctx->instance, false);
+
+	if (error == OT_ERROR_NONE)
+	{
+		ot_started = false;
+	}
+
+	error = otIp6SetEnabled(ctx->instance, false);
+
+	if (error == OT_ERROR_NONE)
+	{
+		rnb_started = false;
+	}
+
+	openthread_api_mutex_unlock(ctx);
 }
 
 static void ot_start_work_handler(struct k_work *item)
@@ -182,65 +268,18 @@ void rnb_utils_get_euid(uint64_t *euid)
 
 void rnb_utils_stop()
 {
-	otError error;
-	struct openthread_context *ctx;
-
-	if (!rnb_started)
+	if (rnb_initialized)
 	{
-		return;
+		k_work_submit(&ot_deinit_work);
 	}
-
-	ctx = openthread_get_default_context();
-
-	openthread_api_mutex_lock(ctx);
-
-	error = otThreadSetEnabled(ctx->instance, false);
-
-	if (error == OT_ERROR_NONE)
-	{
-		ot_started = false;
-	}
-
-	error = otIp6SetEnabled(ctx->instance, false);
-
-	if (error == OT_ERROR_NONE)
-	{
-		rnb_started = false;
-	}
-
-	openthread_api_mutex_unlock(ctx);
 }
 
 void rnb_utils_start()
 {
-	otError error;
-	struct openthread_context *ctx;
-
-	if (rnb_started)
+	if (rnb_initialized)
 	{
-		return;
+		k_work_submit(&ot_init_work);
 	}
-
-	ctx = openthread_get_default_context();
-
-	openthread_api_mutex_lock(ctx);
-
-	error = otIp6SetEnabled(ctx->instance, true);
-
-	if (error == OT_ERROR_NONE)
-	{
-		rnb_started = true;
-	}
-
-#if defined(CONFIG_SOC_NRF52840)
-	// Max allowed RADIO output power for nRF52840 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(ctx->instance, 8); // +8 dBm
-#else
-	// Max allowed RADIO output power for nRF52832 SoC. For more info, refer to datasheet
-	otPlatRadioSetTransmitPower(ctx->instance, 4); // +4 dBm
-#endif
-
-	openthread_api_mutex_unlock(ctx);
 }
 
 static void print_rnb_state(const uint8_t state)
@@ -441,7 +480,7 @@ static void process_rnb_utils_event(const struct device *dev,
 
 				rnb_configured = true;
 
-				k_work_submit(&ot_init_work);
+				rnb_utils_start();
 			}
 			else
 			{
@@ -563,6 +602,44 @@ static void rnb_sntp_process_thread(void *arg1, void *arg2, void *arg3)
 	}
 }
 
+#if REDNODEBUS_SIMULATED_DISCONNECTION
+static void rnb_simulated_disconnection_process_thread(void *arg1, void *arg2, void *arg3)
+{
+	ARG_UNUSED(arg1);
+	ARG_UNUSED(arg2);
+	ARG_UNUSED(arg3);
+
+	bool is_connected;
+
+	while (!is_rnb_connected())
+	{
+		k_sleep(K_SECONDS(1));
+	}
+
+	is_connected = is_rnb_connected();
+
+	while (1)
+	{
+		if (is_connected)
+		{
+			rnb_utils_stop();
+
+			LOG_INF("RedNodeBus stopped");
+		}
+		else
+		{
+			rnb_utils_start();
+
+			LOG_INF("RedNodeBus started");
+		}
+
+		is_connected = !is_connected;
+
+		k_sleep(K_SECONDS(REDNODEBUS_SIMULATED_DISCONNECTION_PERIOD_S));
+	}
+}
+#endif
+
 bool is_rnb_connected(void)
 {
 	return rnb_connected;
@@ -666,7 +743,38 @@ int init_rnb(void)
 
 	k_thread_name_set(&rnb_sntp_thread, "rnb_sntp_thread");
 
+#if REDNODEBUS_SIMULATED_DISCONNECTION
+	k_thread_create(&rnb_simulated_disconnection_thread,
+			rnb_simulated_disconnection_stack,
+			REDNODEBUS_UTILS_STACK_SIZE,
+			rnb_simulated_disconnection_process_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(REDNODEBUS_SIMULATED_DISCONNECTION_THREAD_PRIORITY),
+			0,
+			K_NO_WAIT);
+
+	k_thread_name_set(&rnb_simulated_disconnection_thread, "rnb_simulated_disconnection_thread");
+#endif
+
+#if !defined(CONFIG_REDNODEBUS_WATCHDOG) && defined(CONFIG_WATCHDOG)
+	k_thread_create(&rnb_wdt_thread,
+			rnb_wdt_stack,
+			REDNODEBUS_WDT_STACK_SIZE,
+			rnb_wdt_process_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(REDNODEBUS_WDT_THREAD_PRIORITY),
+			0,
+			K_NO_WAIT);
+
+	k_thread_name_set(&rnb_wdt_thread, "rnb_wdt_thread");
+#endif
+
 	k_work_init(&ot_init_work, ot_init_work_handler);
+	k_work_init(&ot_deinit_work, ot_deinit_work_handler);
 	k_work_init(&ot_start_work, ot_start_work_handler);
 	k_work_init(&ot_stop_work, ot_stop_work_handler);
 
@@ -676,5 +784,68 @@ int init_rnb(void)
 	ieee802154_config.rnb_user_rxtx_signal_handler = handle_rnb_user_rxtx_signal;
 	REDNODEBUS_API(dev)->configure(dev, REDNODEBUS_CONFIG_USER_RXTX_SIGNAL_HANDLER, &ieee802154_config);
 
+	rnb_initialized = true;
+
 	return 0;
 }
+
+#if !defined(CONFIG_REDNODEBUS_WATCHDOG) && defined(CONFIG_WATCHDOG)
+#include <zephyr/drivers/watchdog.h>
+
+#define WATCHDOG_PERIOD 20000
+
+static int wdt_channel_id;
+
+static void nrf5_wdt_start(void)
+{
+	const struct device *wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
+	int err;
+
+	if (!device_is_ready(wdt))
+	{
+		LOG_ERR("%s: device not ready.\n", wdt->name);
+		return;
+	}
+
+	struct wdt_timeout_cfg wdt_config = {
+	    /* Reset SoC when watchdog timer expires. */
+	    .flags = WDT_FLAG_RESET_SOC,
+
+	    /* Expire watchdog after max window */
+	    .window.min = 0U,
+	    .window.max = WATCHDOG_PERIOD,
+	};
+
+	wdt_channel_id = wdt_install_timeout(wdt, &wdt_config);
+	if (wdt_channel_id < 0)
+	{
+		LOG_ERR("Watchdog install error\n");
+		return;
+	}
+
+	err = wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);
+	if (err < 0)
+	{
+		LOG_ERR("Watchdog setup error\n");
+		return;
+	}
+}
+
+static void rnb_wdt_process_thread(void *arg1, void *arg2, void *arg3)
+{
+	ARG_UNUSED(arg1);
+	ARG_UNUSED(arg2);
+	ARG_UNUSED(arg3);
+
+	const struct device *wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
+
+	nrf5_wdt_start();
+
+	while (1)
+	{
+		wdt_feed(wdt, wdt_channel_id);
+		k_sleep(K_MSEC(WATCHDOG_PERIOD / 4));
+	}
+}
+
+#endif /* CONFIG_WATCHDOG */

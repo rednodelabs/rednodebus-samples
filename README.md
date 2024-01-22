@@ -106,9 +106,6 @@ services:
   rnb-otbr:
     image: rednodelabs/rnb-otbr:TAG
     platform: linux/arm64
-    deploy:
-      restart_policy:
-        condition: always
     ports:
       - "1883:1883"
     privileged: true
@@ -132,9 +129,6 @@ services:
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
     platform: linux/arm64
-    deploy:
-      restart_policy:
-        condition: always
     ports:
       - "3000:3000"
     environment:
@@ -195,9 +189,6 @@ services:
   rnb-otbr:
     image: rednodelabs/rnb-otbr:TAG
     platform: linux/arm64
-    deploy:
-      restart_policy:
-        condition: always
     ports:
       - "1883:1883"
     privileged: true
@@ -226,9 +217,6 @@ services:
   rnb-otbr-web-ui:
     image: rednodelabs/rnb-otbr-web-ui:TAG
     platform: linux/arm64
-    deploy:
-      restart_policy:
-        condition: always
     ports:
       - "3000:3000"
     environment:
