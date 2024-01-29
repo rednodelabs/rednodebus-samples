@@ -51,8 +51,8 @@ manifest:
       - zscilib
   - name: openthread
     path: modules/lib/openthread
-    revision: rednodelabs/v1.0.5
+    revision: rednodelabs/v1.1.2
   - name: rednodebus-release
-    revision: v1.2.0
+    revision: v1.2.1
   self:
     west-commands: nrf/scripts/west-commands.yml

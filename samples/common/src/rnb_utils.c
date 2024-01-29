@@ -89,6 +89,7 @@ static struct k_thread rnb_wdt_thread;
 static K_THREAD_STACK_DEFINE(rnb_wdt_stack, REDNODEBUS_WDT_STACK_SIZE);
 
 static void rnb_wdt_process_thread(void *arg1, void *arg2, void *arg3);
+static void nrf5_wdt_start(void);
 #endif
 
 /* RedNodeBus OT start work. */
@@ -104,6 +105,7 @@ static bool rnb_configured;
 static bool rnb_started;
 static bool rnb_connected;
 static bool rnb_initialized = false;
+static bool rnb_rx_signal_received = false;
 static bool ot_started;
 
 static void print_rnb_state(const uint8_t state);
@@ -417,6 +419,7 @@ static void handle_rnb_user_rxtx_signal(const struct device *dev,
 	case REDNODEBUS_USER_RX_SIGNAL:
 		rnb_leds_set_rx(active);
 		rnb_leds_set_tx(false);
+		rnb_rx_signal_received = true;
 		break;
 	case REDNODEBUS_USER_TX_SIGNAL:
 		rnb_leds_set_tx(active);
@@ -759,6 +762,8 @@ int init_rnb(void)
 #endif
 
 #if !defined(CONFIG_REDNODEBUS_WATCHDOG) && defined(CONFIG_WATCHDOG)
+	nrf5_wdt_start();
+
 	k_thread_create(&rnb_wdt_thread,
 			rnb_wdt_stack,
 			REDNODEBUS_WDT_STACK_SIZE,
@@ -793,6 +798,7 @@ int init_rnb(void)
 #include <zephyr/drivers/watchdog.h>
 
 #define WATCHDOG_PERIOD 20000
+#define MAX_WDT_CYCLES_NO_RX_SIGNAL 4
 
 static int wdt_channel_id;
 
@@ -836,14 +842,27 @@ static void rnb_wdt_process_thread(void *arg1, void *arg2, void *arg3)
 	ARG_UNUSED(arg1);
 	ARG_UNUSED(arg2);
 	ARG_UNUSED(arg3);
+	static uint8_t cycles_no_rx_signal = 0;
 
 	const struct device *wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 
-	nrf5_wdt_start();
-
 	while (1)
 	{
-		wdt_feed(wdt, wdt_channel_id);
+		if (rnb_started && !rnb_rx_signal_received)
+		{
+			cycles_no_rx_signal++;
+		}
+		else
+		{
+			rnb_rx_signal_received = false;
+			cycles_no_rx_signal = 0;
+		}
+
+		if (cycles_no_rx_signal < MAX_WDT_CYCLES_NO_RX_SIGNAL)
+		{
+
+			wdt_feed(wdt, wdt_channel_id);
+		}
 		k_sleep(K_MSEC(WATCHDOG_PERIOD / 4));
 	}
 }
