@@ -31,7 +31,7 @@ west update
 ## RNB Lib
 The documentation of the RNB Lib can be downloaded [here](https://netorgft3728920-my.sharepoint.com/:f:/g/personal/info_rednodelabs_com/EtkJVPIkzXdIto2uDBEu8cEB3RYr4fQToy8okK3j-pmCig?e=nxpn0N).
 
-To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [CoAP Client](samples/coap_client/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api).
+To test the system, check the `samples` folder and flash either the [RNB Node](samples/rednodebus_node/README.md), the [Echo Client](samples/echo_client/README.md), the [Accelerometer](samples/accelerometer/README.md) or the [Socket Test](samples/socket_test/README.md) sample in the wireless nodes, and run the [RNB OTBR](#integrating-rednodebus-with-the-openthread-border-router) docker. Once running, interact with the system using the [MQTT API](#mqtt-api).
 
 All samples, except the `coprocessor`, `battery` and `accelerometer`, are compatible with the following boards:
 - `decawave_dwm1001_dev` (data bus and ranging)

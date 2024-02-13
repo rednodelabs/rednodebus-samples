@@ -244,13 +244,19 @@ void port_wakeup(void)
 #if 0
 //     gpio_pin_set(wakeup_dev, WAKEUP_GPIO_PIN, 0);
 #else
-	uint8_t cswakeup_buf[150];
-	cswakeup_buf[0] = 0;
+	// uint8_t cswakeup_buf[150];
+	// cswakeup_buf[0] = 0;
 
-	port_set_dw_ic_spi_slowrate();
+	// port_set_dw_ic_spi_slowrate();
 
 	// Do a long read to wake up the chip (hold the chip select low)
-	readfromspi(1, cswakeup_buf, sizeof(cswakeup_buf), cswakeup_buf);
+	// readfromspi(1, cswakeup_buf, sizeof(cswakeup_buf), cswakeup_buf);
+
+	activate_cs();
+
+	deca_sleep(1);
+
+	deactivate_cs();
 
 	deca_sleep(2);
 

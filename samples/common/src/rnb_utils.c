@@ -27,7 +27,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include "rnb_leds.h"
 
 #define REDNODEBUS_UTILS_STACK_SIZE 512
-#define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 8
+#define REDNODEBUS_UTILS_EVENT_BUFFER_SIZE 4
 #define REDNODEBUS_UTILS_THREAD_PRIORITY 3
 #define REDNODEBUS_SNTP_STACK_SIZE 1024
 #define CONFIG_IPV6_ADDR_SNTP "2001:0db8:0001:ffff:0000:0000:ac13:0002"
@@ -692,7 +692,7 @@ int init_rnb(void)
 		LOG_WRN("Cannot init RedNodeBus LEDs");
 	}
 
-#if defined(CONFIG_DK_LIBRARY) && !defined(CONFIG_COAP_UTILS)
+#if defined(CONFIG_DK_LIBRARY)
 	ret = dk_buttons_init(on_button_changed);
 	if (ret)
 	{
@@ -797,7 +797,7 @@ int init_rnb(void)
 #if !defined(CONFIG_REDNODEBUS_WATCHDOG) && defined(CONFIG_WATCHDOG)
 #include <zephyr/drivers/watchdog.h>
 
-#define WATCHDOG_PERIOD 20000
+#define WATCHDOG_PERIOD 120000
 #define MAX_WDT_CYCLES_NO_RX_SIGNAL 4
 
 static int wdt_channel_id;

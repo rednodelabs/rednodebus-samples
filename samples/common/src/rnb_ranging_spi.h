@@ -4,7 +4,7 @@
  *
  * @attention
  *
- * Copyright 2023 (c) RedNodeLabs.
+ * Copyright 2024 (c) RedNodeLabs.
  *
  * All rights reserved.
  *
@@ -16,11 +16,6 @@
 
 #include <nrfx_spi.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 struct spi_nrfx_config
 {
 	nrfx_spi_t spi;
@@ -29,19 +24,18 @@ struct spi_nrfx_config
 	const struct pinctrl_dev_config *pcfg;
 };
 
-	int openspi(void);
-	int closespi(void);
+int openspi(void);
+int closespi(void);
 
-	void set_spi_speed_slow();
-	void set_spi_speed_fast();
+void set_spi_speed_slow();
+void set_spi_speed_fast();
 
-	int readfromspi(uint16_t headerLength,
-			const uint8_t *headerBuffer,
-			uint16_t readLength,
-			uint8_t *readBuffer);
+int activate_cs();
+int deactivate_cs();
 
-#ifdef __cplusplus
-}
-#endif
+int readfromspi(uint16_t headerLength,
+		const uint8_t *headerBuffer,
+		uint16_t readLength,
+		uint8_t *readBuffer);
 
 #endif /* _RNB_RANGING_SPI_H_ */

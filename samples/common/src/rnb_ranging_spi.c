@@ -4,7 +4,7 @@
  *
  * @attention
  *
- * Copyright 2023 (c) RedNodeLabs.
+ * Copyright 2024 (c) RedNodeLabs.
  *
  * All rights reserved.
  *
@@ -143,7 +143,7 @@ int openspi(void)
 	nrfx_spi_config_t config;
 	nrfx_err_t result;
 
-	if(spi_busy)
+	if (spi_busy)
 	{
 		return -EIO;
 	}
@@ -165,7 +165,7 @@ int openspi(void)
 			return -EIO;
 		}
 
-		pm_device_state_lock(spi);
+		pm_device_busy_set(spi);
 
 		driver_initialized = true;
 	}
@@ -212,7 +212,7 @@ void set_spi_speed_slow(void)
 {
 	const struct spi_nrfx_config *dev_config = spi->config;
 
-	if (!spi_initialized)
+	if (!spi_initialized || spi_busy)
 	{
 		LOG_ERR("Failed accessing SPI");
 		return;
@@ -229,7 +229,7 @@ void set_spi_speed_fast(void)
 {
 	const struct spi_nrfx_config *dev_config = spi->config;
 
-	if (!spi_initialized)
+	if (!spi_initialized || spi_busy)
 	{
 		LOG_ERR("Failed accessing SPI");
 		return;
@@ -246,7 +246,7 @@ int closespi(void)
 {
 	const struct spi_nrfx_config *dev_config = spi->config;
 
-	if(spi_busy)
+	if (spi_busy)
 	{
 		return -EIO;
 	}
@@ -327,6 +327,32 @@ int writetospiwithcrc(uint16_t headerLength,
 		      const uint8_t *bodyBuffer,
 		      uint8_t crc8)
 {
+	return 0;
+}
+
+int activate_cs()
+{
+	if (!spi_initialized || spi_busy)
+	{
+		LOG_ERR("Failed accessing SPI");
+		return -EIO;
+	}
+
+	gpio_pin_set_dt(&dwm_cs, true);
+
+	return 0;
+}
+
+int deactivate_cs()
+{
+	if (!spi_initialized || spi_busy)
+	{
+		LOG_ERR("Failed accessing SPI");
+		return -EIO;
+	}
+
+	gpio_pin_set_dt(&dwm_cs, false);
+
 	return 0;
 }
 
