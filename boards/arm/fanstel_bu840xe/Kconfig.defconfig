@@ -1,0 +1,21 @@
+# Fanstel BU840XE board configuration
+
+# Copyright (c) 2024 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_FANSTEL_BU840XE
+
+config BOARD
+	default "fanstel_bu840xe"
+
+config BT_CTLR
+	default BT
+
+config I2C
+	default SENSOR
+
+config SPI
+	default y
+	depends on IEEE802154
+
+endif # BOARD_FANSTEL_BU840XE

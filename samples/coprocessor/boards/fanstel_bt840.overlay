@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2023 RedNodeLabs
+ */
+
+&uart0 {
+	current-speed = <1000000>;
+	status = "okay";
+	hw-flow-control;
+	interrupts = <2 4>;
+};
+
+/ {
+	chosen {
+		zephyr,entropy = &rng;
+		zephyr,ot-uart = &uart0;
+	};
+};

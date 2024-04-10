@@ -1,0 +1,18 @@
+identifier: fanstel_bu840xe
+name: Fanstel-BU840XE
+type: mcu
+arch: arm
+ram: 256
+flash: 1024
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - adc
+  - usb_device
+  - ble
+  - gpio
+  - pwm
+  - watchdog
+  - counter

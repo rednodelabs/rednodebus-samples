@@ -3,7 +3,7 @@ sample:
   description: Test RedNodeBus Node
 tests:
   sample.rednodebus_node.rnb:
-    platform_allow: nrf52832_mdk nrf52840dk_nrf52840 nrf52833dk_nrf52833 nrf52840dongle_nrf52840 decawave_dwm1001_dev insightsip_isp3010_dev qorvo_dwm3001c_dev rnl_w1 rnl_w1x
+    platform_allow: nrf52832_mdk nrf52840dk_nrf52840 nrf52833dk_nrf52833 nrf52840dongle_nrf52840 decawave_dwm1001_dev insightsip_isp3010_dev qorvo_dwm3001c_dev rnl_w1 rnl_w1x fanstel_bu840xe
     integration_platforms:
       - nrf52832_mdk
       - nrf52833dk_nrf52833
@@ -14,11 +14,12 @@ tests:
       - qorvo_dwm3001c_dev
       - rnl_w1
       - rnl_w1x
+      - fanstel_bu840xe
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
     build_only: true
     tags: ci_build
   sample.rednodebus_node.rnb.debug:
-    platform_allow: nrf52832_mdk nrf52840dk_nrf52840 nrf52833dk_nrf52833 decawave_dwm1001_dev qorvo_dwm3001c_dev rnl_w1 rnl_w1x
+    platform_allow: nrf52832_mdk nrf52840dk_nrf52840 nrf52833dk_nrf52833 nrf52840dongle_nrf52840 decawave_dwm1001_dev insightsip_isp3010_dev qorvo_dwm3001c_dev rnl_w1 rnl_w1x fanstel_bu840xe
     integration_platforms:
       - nrf52832_mdk
       - nrf52833dk_nrf52833
@@ -27,7 +28,7 @@ tests:
       - qorvo_dwm3001c_dev
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-debug.conf
     build_only: true
-    tags: ci_build
+    tags: ci_private_build
   sample.rednodebus_node.rnb.ranging_diag:
     platform_allow: decawave_dwm1001_dev insightsip_isp3010_dev qorvo_dwm3001c_dev rnl_w1
     integration_platforms:
@@ -37,10 +38,11 @@ tests:
     build_only: true
     tags: ci_build
   sample.rednodebus_node.rnb.usb.mcuboot:
-    platform_allow: rnl_w1 rnl_w1x
+    platform_allow: rnl_w1 rnl_w1x fanstel_bu840xe
     integration_platforms:
       - rnl_w1
       - rnl_w1x
+      - fanstel_bu840xe
     extra_args: CONF_FILE=prj_mcuboot.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;
     build_only: true

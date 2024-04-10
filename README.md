@@ -43,6 +43,7 @@ All samples, except the `coprocessor`, `battery` and `accelerometer`, are compat
 - `nrf52832_mdk` (only data bus)
 - `rnl_w1` (data bus and ranging)
 - `rnl_w1x` (only data bus)
+- `fanstel_bu840xe` (only data bus)
 
 The `battery` sample is compatible with the following boards:
 - `rnl_w1` (data bus and ranging)
@@ -60,6 +61,7 @@ The `coprocessor` sample is compatible with the following boards:
 - `nrf52840dongle_nrf52840`
 - `qorvo_dwm3001c_dev`
 - `rnl_w1`
+- `fanstel_bu840xe`
 
 The fastest way to start is programming the simplest sample in the nodes ([RNB Node](samples/rednodebus_node/README.md)). Compiled hex files of the samples are available for some supported boards in [rednodebus-release](https://github.com/rednodelabs/rednodebus-release/tree/main/hex). To check supported boards and building flags, the `sample.yaml` files of each sample can be used as reference.
 
@@ -122,6 +124,10 @@ services:
       - RCP_FD=/dev/ttyACM0
       - MQTT_HOST=localhost
       - MQTT_PORT=1883
+      - RNB_OTBR_DFU=1
+      - RNB_OTBR_DFU_BOARD=BOARD_NAME
+      - RNB_OTBR_DFU_UART=0
+      - RNB_OTBR_DFU_RANGING_DIAG=0
     networks:
       rnb-otbr-nw:
         ipv4_address: 172.19.0.2
@@ -146,7 +152,7 @@ networks:
        - subnet: 172.19.0.0/16
 ```
 
-Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used).
+Replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used).
 
 > TAG has the format `vX.X.X`, check the tag of the current release in Github.
 
@@ -181,59 +187,7 @@ The board needs to be flashed with the `coprocessor_smp_svr` available in [redno
 west flash --hex-file path/to/image/merged.hex
 ```
 
-In order to activate the service in the docker, use the following docker compose template:
-
-``` yaml
-version: '3.8'
-services:
-  rnb-otbr:
-    image: rednodelabs/rnb-otbr:TAG
-    platform: linux/arm64
-    ports:
-      - "1883:1883"
-    privileged: true
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv6.conf.all.forwarding=1
-      - net.ipv4.conf.all.forwarding=1
-      - net.netfilter.nf_conntrack_udp_timeout=1200
-      - net.netfilter.nf_conntrack_udp_timeout_stream=1200
-    volumes:
-      - /home/pi/rnl_certs:/app/config
-      - /dev:/dev
-    environment:
-      - RCP_FD=/dev/ttyACM0
-      - MQTT_HOST=localhost
-      - MQTT_PORT=1883
-      - RNB_OTBR_DFU=1
-      - RNB_OTBR_DFU_BOARD=BOARD_NAME
-      - RNB_OTBR_DFU_UART=0
-      - RNB_OTBR_DFU_RANGING_DIAG=0
-    networks:
-      rnb-otbr-nw:
-        ipv4_address: 172.19.0.2
-
-
-  rnb-otbr-web-ui:
-    image: rednodelabs/rnb-otbr-web-ui:TAG
-    platform: linux/arm64
-    ports:
-      - "3000:3000"
-    environment:
-      - MQTT_HOST=rnb-otbr
-      - MQTT_PORT=1883
-    networks:
-      rnb-otbr-nw:
-        ipv4_address: 172.19.0.3
-
-networks:
-  rnb-otbr-nw:
-    driver: bridge
-    ipam:
-     config:
-       - subnet: 172.19.0.0/16
-```
-Please, replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used) and change `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`. If ranging diagnostics are desired set `RNB_OTBR_DFU_RANGING_DIAG` to `1` (only for testing purposes, all other nodes in the system must be compiled with this option for the system to operate properly).
+In order to activate the service in the docker, change `RNB_OTBR_DFU` to `1` in the docker compose template. By default, it assumes that the board is connected via USB. To choose the UART interface for the DFU mechanism, set `RNB_OTBR_DFU_UART` to `1`. Also replace `BOARD_NAME` with the right name of your board in the `RNB_OTBR_DFU_BOARD` variable, e.g. `nrf52840dk_nrf52840`. If ranging diagnostics are desired, set `RNB_OTBR_DFU_RANGING_DIAG` to `1` (only for testing purposes, all other nodes in the system must be compiled with this option for the system to operate properly).
 
 ## MQTT API
 

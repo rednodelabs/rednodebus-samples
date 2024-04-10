@@ -1,0 +1,8 @@
+# Fanstel BU840XE board configuration
+
+# Copyright (c) 4 RedNodeLabs.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_FANSTEL_BU840XE
+	bool "Fanstel BU840XE"
+	depends on SOC_NRF52840_QIAA

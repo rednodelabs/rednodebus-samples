@@ -27,6 +27,7 @@ target_sources(app PRIVATE src/main.c src/nrf_802154_radio_wrapper.c ${CMAKE_BIN
 target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
 target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_pa_lna.c)
 
 target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)

@@ -21,8 +21,11 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #include <openthread/ip6.h>
 #include <openthread/thread.h>
 
+#if defined(CONFIG_DK_LIBRARY)
 #include <dk_buttons_and_leds.h>
+#endif
 
+#include "rnb_pa_lna.h"
 #include "rnb_utils.h"
 #include "rnb_leds.h"
 
@@ -34,6 +37,7 @@ LOG_MODULE_REGISTER(rnb_utils, LOG_LEVEL_INF);
 #define CONFIG_IPV6_ADDR_SNTP_PORT 123
 #define REDNODEBUS_SNTP_THREAD_PRIORITY 4
 #define REDNODEBUS_SNTP_UPDATE_TRIGGER "CLOCK"
+#define REDNODEBUS_SNTP_UPDATE_TRIGGER_LENGTH 5
 #define REDNODEBUS_UTILS_EUID_BYTE_LENGTH 6
 #define REDNODEBUS_SIMULATED_DISCONNECTION 0
 #define REDNODEBUS_SIMULATED_DISCONNECTION_PERIOD_S 10
@@ -239,10 +243,10 @@ __WEAK void rnb_utils_handle_user_payload(const uint8_t user_payload_length,
 					  const struct rednodebus_user_event_params_user_payload *user_payload)
 {
 	/* Example receiving a command via user payload. */
-	if (user_payload_length == 5)
+	if (user_payload_length == REDNODEBUS_SNTP_UPDATE_TRIGGER_LENGTH)
 	{
 		char sntp_trigger_bfr[] = REDNODEBUS_SNTP_UPDATE_TRIGGER;
-		if (!memcmp(user_payload, sntp_trigger_bfr, 5))
+		if (!memcmp(user_payload, sntp_trigger_bfr, REDNODEBUS_SNTP_UPDATE_TRIGGER_LENGTH))
 		{
 			k_sem_give(&sntp_sem);
 			LOG_INF("SNTP Update Trigger Received");
@@ -315,6 +319,9 @@ static void print_rnb_role(const uint8_t role)
 		break;
 	case REDNODEBUS_USER_ROLE_ANCHOR:
 		LOG_INF("RNB role: ANCHOR");
+		break;
+	case REDNODEBUS_USER_ROLE_RELAY:
+		LOG_INF("RNB role: RELAY");
 		break;
 	case REDNODEBUS_USER_ROLE_UNDEFINED:
 		LOG_INF("RNB role: UNDEFINED");
@@ -691,6 +698,14 @@ int init_rnb(void)
 	{
 		LOG_WRN("Cannot init RedNodeBus LEDs");
 	}
+
+#if defined(CONFIG_BOARD_FANSTEL_BU840XE)
+	ret = rnb_pa_lna_init(true);
+	if (ret)
+	{
+		LOG_WRN("Cannot init RedNodeBus PA LNA");
+	}
+#endif
 
 #if defined(CONFIG_DK_LIBRARY)
 	ret = dk_buttons_init(on_button_changed);

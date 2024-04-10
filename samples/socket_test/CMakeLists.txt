@@ -23,7 +23,8 @@ target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
 target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_utils.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_leds.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_pa_lna.c)
 target_sources_ifdef(CONFIG_REDNODERANGING app PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_ranging_port.c
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/rnb_ranging_spi.c

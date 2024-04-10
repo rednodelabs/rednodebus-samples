@@ -1,0 +1,17 @@
+identifier: fanstel_bt840
+name: Fanstel-BT840
+type: mcu
+arch: arm
+ram: 256
+flash: 1024
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - adc
+  - ble
+  - gpio
+  - pwm
+  - watchdog
+  - counter

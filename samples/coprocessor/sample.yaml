@@ -3,19 +3,20 @@ sample:
   description: RedNodeBus OpenThread Co-Processor
 tests:
   sample.coprocessor.rnb.usb:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1 fanstel_bu840xe fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
       - nrf52840dongle_nrf52840
       - qorvo_dwm3001c_dev
       - rnl_w1
+      - fanstel_bu840xe
     extra_args: CONF_FILE=prj.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf
     build_only: true
     tags: ci_build
   sample.coprocessor.rnb.ranging_diagnostic.usb:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 nrf52840dongle_nrf52840 qorvo_dwm3001c_dev rnl_w1 fanstel_bu840xe fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
@@ -27,18 +28,19 @@ tests:
     build_only: true
     tags: ci_build
   sample.coprocessor.rnb.usb.mcuboot:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1 fanstel_bu840xe fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
       - qorvo_dwm3001c_dev
       - rnl_w1
+      - fanstel_bu840xe
     extra_args: CONF_FILE=prj_mcuboot.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf;overlay-usb-rnb.conf
     build_only: true
     tags: ci_private_build
   sample.coprocessor.rnb.ranging_diagnostic.usb.mcuboot:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 qorvo_dwm3001c_dev rnl_w1 fanstel_bu840xe fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
@@ -49,19 +51,21 @@ tests:
     build_only: true
     tags: ci_private_build
   sample.coprocessor.rnb.uart:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
+      - fanstel_bt840
     extra_args: CONF_FILE=prj.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf
     build_only: true
     tags: ci_build
   sample.coprocessor.rnb.uart.mcuboot:
-    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840
+    platform_allow: nrf52833dk_nrf52833 nrf52840dk_nrf52840 fanstel_bt840
     integration_platforms:
       - nrf52833dk_nrf52833
       - nrf52840dk_nrf52840
+      - fanstel_bt840
     extra_args: CONF_FILE=prj_mcuboot.conf
                 OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-vendor_hook-rnb.conf
     build_only: true
