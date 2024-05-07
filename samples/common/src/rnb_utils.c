@@ -242,7 +242,12 @@ __WEAK void rnb_utils_handle_new_state(const struct rednodebus_user_event_params
 __WEAK void rnb_utils_handle_user_payload(const uint8_t user_payload_length,
 					  const struct rednodebus_user_event_params_user_payload *user_payload)
 {
-	/* Example receiving a command via user payload. */
+	/* Intentionally empty. */
+}
+
+void rnb_utils_user_payload(const uint8_t user_payload_length,
+			    const struct rednodebus_user_event_params_user_payload *user_payload)
+{
 	if (user_payload_length == REDNODEBUS_SNTP_UPDATE_TRIGGER_LENGTH)
 	{
 		char sntp_trigger_bfr[] = REDNODEBUS_SNTP_UPDATE_TRIGGER;
@@ -252,6 +257,8 @@ __WEAK void rnb_utils_handle_user_payload(const uint8_t user_payload_length,
 			LOG_INF("SNTP Update Trigger Received");
 		}
 	}
+
+	rnb_utils_handle_user_payload(user_payload_length, user_payload);
 }
 
 void rnb_utils_get_euid(uint64_t *euid)
@@ -526,7 +533,7 @@ static void process_rnb_utils_event(const struct device *dev,
 	case REDNODEBUS_USER_EVENT_USER_PAYLOAD:
 		user_payload = &rnb_user_event_params->user_payload;
 
-		rnb_utils_handle_user_payload(rnb_user_event_params->event_params_length, user_payload);
+		rnb_utils_user_payload(rnb_user_event_params->event_params_length, user_payload);
 		break;
 	default:
 		LOG_WRN("RNB user event: unknown");
