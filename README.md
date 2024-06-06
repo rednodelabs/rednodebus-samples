@@ -124,7 +124,7 @@ services:
       - RCP_FD=/dev/ttyACM0
       - MQTT_HOST=localhost
       - MQTT_PORT=1883
-      - RNB_OTBR_DFU=1
+      - RNB_OTBR_DFU=0
       - RNB_OTBR_DFU_BOARD=BOARD_NAME
       - RNB_OTBR_DFU_UART=0
       - RNB_OTBR_DFU_RANGING_DIAG=0
