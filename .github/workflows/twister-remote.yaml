@@ -70,7 +70,7 @@ jobs:
           ../zephyr/scripts/twister -T samples/${{matrix.sample}} ${TWISTER_COMMON} --board-root boards
       - name: Upload Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results (Subset ${{ matrix.subset }})
           if-no-files-found: ignore
@@ -98,7 +98,7 @@ jobs:
           junit2html junit.xml junit.html
       - name: Upload Unit Test Results in HTML
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: HTML Unit Test Results
           if-no-files-found: ignore

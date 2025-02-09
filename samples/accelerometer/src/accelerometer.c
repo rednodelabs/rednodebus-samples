@@ -53,15 +53,29 @@ const int packet_len = sizeof(packet_buffer);
 
 const struct device *sensor;
 
-struct configs conf = {
-    .ipv6 = {
-	.proto = "IPv6",
-	.udp.sock = INVALID_SOCK},
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+struct configs_rnb conf_rnb = {
+	.rnb = {
+		.proto = "RNB",
+		.rnb_user_payload.mtu = REDNODEBUS_USER_PAYLOAD_MAX_LENGTH
+	}
 };
+#else
+struct configs conf = {
+    	.ipv6 = {
+		.proto = "IPv6",
+		.udp.sock = INVALID_SOCK
+	}
+};
+#endif
 
 static void init_app(void)
 {
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+
+#else
 	conf.ipv6.udp.mtu = MTU_SIZE;
+#endif
 
 #if defined(CONFIG_REDNODEBUS)
 	uint64_t euid = 0;
@@ -78,6 +92,7 @@ static void init_app(void)
 static void fetch_and_display(const struct device *sensor)
 {
 	static unsigned int count;
+	static unsigned int packets_sent;
 	struct sensor_value accel[3];
 	const char *overrun = "";
 	int rc = sensor_sample_fetch(sensor);
@@ -101,6 +116,7 @@ static void fetch_and_display(const struct device *sensor)
 	}
 	else
 	{
+		packet_buffer[3] = packets_sent;
 		packet_buffer[4] = accel[0].val1;
 		packet_buffer[5] = accel[0].val2;
 		packet_buffer[6] = accel[1].val1;
@@ -108,7 +124,18 @@ static void fetch_and_display(const struct device *sensor)
 		packet_buffer[8] = accel[2].val1;
 		packet_buffer[9] = accel[2].val2;
 
-		send_udp_data(&conf.ipv6);
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+		conf_rnb.rnb.rnb_user_payload.transmitting = packet_len;
+		memcpy(&conf_rnb.rnb.rnb_user_payload.rnb_user_payload_params.user_payload, packet_buffer, conf_rnb.rnb.rnb_user_payload.transmitting);
+		rc = send_rnb_data(&conf_rnb.rnb);
+#else
+		rc = send_udp_data(&conf.ipv6);
+#endif
+
+		if(rc == 0)
+		{
+			packets_sent++;
+		}
 
 		LOG_DBG("#%u EUID 0x%04X%04X @ %u ms; %sx_acc: %d, y_acc: %0d, z_acc: %d\n",
 			count, packet_buffer[1], packet_buffer[0], k_uptime_get_32(), overrun,
@@ -157,15 +184,25 @@ static void start_client(void)
 
 	if (rnb_role == REDNODEBUS_USER_ROLE_TAG)
 	{
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+		ret = start_rnb_user_payload();
+#else
 		ret = start_udp();
+#endif
+
 		if (ret == 0)
 		{
 			accelerometer();
 		}
 		else
 		{
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+			LOG_ERR("RNB user payload init failed");
+			stop_rnb_user_payload();
+#else
 			LOG_ERR("UDP init failed");
 			stop_udp();
+#endif
 		}
 	}
 }

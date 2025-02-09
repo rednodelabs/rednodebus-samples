@@ -12,7 +12,6 @@ To test the echo client, the `socket_test.py` file located in the `script` folde
 Using the `socket_test.py` script in the same machine running the RNB OTBR docker (or one reachable through the IP network), the socket service can be tested.
 
 The IPv4 address (converted to an IPv6 equivalent) of the machine running the `socket_test.py` can be specified in the `common.h` file:
-```
 
 For example, if the server runs in the following local IP (default Docker IP):
 ```
@@ -31,3 +30,11 @@ Finally, we specify it in the corresponding define in `common.h`:
 ```
 #define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 ```
+
+## Using the RNB socket
+To use the native RedNodeBus socket instead of the UDP socket, add the `overlay-rnb-user-payload.conf` to the compilation:
+```
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-rnb-user-payload.conf"
+```
+
+And use the `socket_test_rnb.py` script instead.

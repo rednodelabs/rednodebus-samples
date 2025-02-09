@@ -103,7 +103,6 @@ In order to visualize and interact with the RedNodeBus services, an optional web
 The following docker compose template can be used to launch both RNB OTBR and RNB OTBR WEB UI services:
 
 ``` yaml
-version: '3.8'
 services:
   rnb-otbr:
     image: rednodelabs/rnb-otbr:TAG
@@ -122,8 +121,11 @@ services:
       - /dev:/dev
     environment:
       - RCP_FD=/dev/ttyACM0
+      - OTBR_AGENT_LOG_LEVEL=2
+      - RNB_HOST_APP_LOG_LEVEL=4
       - MQTT_HOST=localhost
       - MQTT_PORT=1883
+      - RNB_RANGING_DIAG=0
       - RNB_OTBR_DFU=0
       - RNB_OTBR_DFU_BOARD=BOARD_NAME
       - RNB_OTBR_DFU_UART=0
@@ -152,7 +154,7 @@ networks:
        - subnet: 172.19.0.0/16
 ```
 
-Replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used).
+Replace the `TAG` labels with the right ones (i.e. `vX.X.X`) in the `image` fields and specify the correct path of the volume with the certificates (`/home/pi/rnl_certs` in the example). If UART is used, replace `/dev/ttyACM0` with the right RCP file descriptor in the `RCP_FD` environment variable (not required if USB is used). If ranging diagnostics are desired, set `RNB_RANGING_DIAG` to `1` (only for testing purposes, all other nodes in the system must be compiled with this option for the system to operate properly).
 
 > TAG has the format `vX.X.X`, check the tag of the current release in Github.
 

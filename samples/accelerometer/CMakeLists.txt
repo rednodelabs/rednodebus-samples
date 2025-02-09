@@ -18,7 +18,8 @@ target_sources(app PRIVATE src/accelerometer.c)
 
 target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 
-target_sources_ifdef(CONFIG_NET_UDP app PRIVATE src/udp.c)
+target_sources_ifndef(CONFIG_USE_REDNODEBUS_USER_PAYLOAD app PRIVATE src/udp.c)
+target_sources_ifdef(CONFIG_USE_REDNODEBUS_USER_PAYLOAD app PRIVATE src/rnb-user-payload.c)
 
 target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC ../common/src)
 target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE

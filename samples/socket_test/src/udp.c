@@ -23,22 +23,12 @@ LOG_MODULE_DECLARE(net_socket_test_sample, LOG_LEVEL_DBG);
 int send_udp_data(struct data *data)
 {
 	int ret;
-	static int packets_sent;
 
-	memcpy(&lorem_ipsum[UID_CHARS + SESSION_RAND_CHARS], &packets_sent, sizeof(packets_sent));
-
-	do
-	{
-		// data->udp.transmitting = sys_rand32_get() % ipsum_len;
-		data->udp.transmitting = UDP_TRANSMISSION_BYTES % ipsum_len;
-	} while (data->udp.transmitting == 0U ||
-		 data->udp.transmitting > data->udp.mtu);
+	data->udp.transmitting = UDP_TRANSMISSION_BYTES % ipsum_len;
 
 	ret = send(data->udp.sock, lorem_ipsum, data->udp.transmitting, 0);
 
 	LOG_DBG("%s UDP: Sent %d bytes", data->proto, data->udp.transmitting);
-
-	packets_sent++;
 
 	return ret < 0 ? -EIO : 0;
 }

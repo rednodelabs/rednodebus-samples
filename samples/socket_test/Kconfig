@@ -1,0 +1,16 @@
+# Copyright (c) 2025 RedNodeLabs
+# SPDX-License-Identifier: Apache-2.0
+
+menu "echo_client"
+
+config USE_REDNODEBUS_USER_PAYLOAD
+	bool "Enable data traffic through RedNodeBus user payload mechanism"
+	default n
+
+config USE_REDNODEBUS_USER_PAYLOAD_ONLY
+	bool "Enable data traffic only through RedNodeBus user payload mechanism"
+	default n
+
+source "Kconfig.zephyr"
+
+endmenu

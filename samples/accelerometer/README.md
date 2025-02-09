@@ -33,3 +33,11 @@ Finally, we specify it in the corresponding define in `common.h`:
 
 ## Accelerometer Configuration
 It is possible to set different configurations for the accelerometer. To change them, add the necesary configs in the file `prj.conf`. Check the available configurations for in `zephyr/drivers/sensor/lis2dh/Kconfig`. By default, the accelerometer is only activer if the board acts as a TAG.
+
+## Using the RNB socket
+To use the native RedNodeBus socket instead of the UDP socket, add the `overlay-rnb-user-payload.conf` to the compilation:
+```
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-rnb-user-payload.conf"
+```
+
+And use the `accelerometer_rnb.py` script instead.

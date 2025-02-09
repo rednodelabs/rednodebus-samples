@@ -387,7 +387,7 @@ static void print_rnb_ranging_mode(const uint8_t ranging_mode)
 		LOG_INF("RNB ranging mode: DISABLED");
 		break;
 	default:
-		LOG_WRN("RNB ranging mode: unknown");
+		LOG_WRN("RNB ranging mode: unknown (%d)", ranging_mode);
 		break;
 	}
 }
@@ -524,7 +524,11 @@ static void process_rnb_utils_event(const struct device *dev,
 		    (state->state == REDNODEBUS_USER_BUS_STATE_CONNECTED))
 		{
 			print_rnb_uwb_mode(state->uwb_mode);
-			print_rnb_ranging_mode(state->ranging_mode);
+
+			if (state->uwb_mode != REDNODEBUS_USER_UWB_MODE_NONE)
+			{
+				print_rnb_ranging_mode(state->ranging_mode);
+			}
 		}
 
 		rnb_utils_handle_new_state(state);

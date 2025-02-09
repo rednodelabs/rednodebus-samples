@@ -30,3 +30,11 @@ Finally, we specify it in the corresponding define in `common.h`:
 ```
 #define CONFIG_NET_CONFIG_PEER_IPV6_ADDR "2001:0db8:0001:ffff:0000:0000:ac11:0001"
 ```
+
+## Using the RNB socket
+To use the native RedNodeBus socket instead of the UDP socket, add the `overlay-rnb-user-payload.conf` to the compilation:
+```
+west build -p -b BOARD_NAME . -- -DOVERLAY_CONFIG="overlay-ot-rnb.conf overlay-rnb-user-payload.conf"
+```
+
+And use the `echo_server_rnb.py` script instead.

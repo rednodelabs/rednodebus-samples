@@ -23,21 +23,12 @@ LOG_MODULE_DECLARE(net_accelerometer_sample, LOG_LEVEL_DBG);
 int send_udp_data(struct data *data)
 {
 	int ret;
-	static int packets_sent;
 
-	packet_buffer[3] = packets_sent;
-
-	do
-	{
-		data->udp.transmitting = packet_len;
-	} while (data->udp.transmitting == 0U ||
-		 data->udp.transmitting > data->udp.mtu);
+	data->udp.transmitting = packet_len;
 
 	ret = send(data->udp.sock, packet_buffer, data->udp.transmitting, 0);
 
 	LOG_DBG("%s UDP: Sent %d bytes", data->proto, data->udp.transmitting);
-
-	packets_sent++;
 
 	return ret < 0 ? -EIO : 0;
 }

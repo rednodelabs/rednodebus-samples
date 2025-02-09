@@ -29,14 +29,8 @@ LOG_MODULE_REGISTER(net_echo_client_sample, LOG_LEVEL_DBG);
 #include <net/net_mgmt.h>
 #include <net/net_event.h>
 #include <net/net_conn_mgr.h>
-
-#if defined(CONFIG_USERSPACE)
-#include <app_memory/app_memdomain.h>
-K_APPMEM_PARTITION_DEFINE(app_partition);
-struct k_mem_domain app_domain;
-#endif
-
 #ifdef CONFIG_REDNODEBUS
+#include <net/ieee802154_radio.h>
 #include "rnb_utils.h"
 #endif /* CONFIG_REDNODEBUS */
 
@@ -78,7 +72,8 @@ const char lorem_ipsum[] =
 
 const int ipsum_len = sizeof(lorem_ipsum) - 1;
 
-APP_DMEM struct configs conf = {
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
+struct configs conf = {
 	.ipv6 = {
 		.proto = "IPv6",
 		.udp.sock = INVALID_SOCK,
@@ -86,16 +81,33 @@ APP_DMEM struct configs conf = {
 	}
 };
 
-static APP_BMEM struct pollfd fds[4];
-static APP_BMEM int nfds;
+static struct pollfd fds[4];
+static int nfds;
 
-static APP_BMEM bool connected;
+static bool connected;
 K_SEM_DEFINE(run_app, 0, 1);
 
 #if defined(CONFIG_NET_CONNECTION_MANAGER)
 static struct net_mgmt_event_callback mgmt_cb;
 #endif
 
+static struct k_thread udp_thread;
+static K_KERNEL_STACK_MEMBER(udp_stack, 800);
+#endif
+
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+struct configs_rnb conf_rnb = {
+	.rnb = {
+		.proto = "RNB",
+		.rnb_user_payload.mtu = REDNODEBUS_USER_PAYLOAD_MAX_LENGTH,
+	}
+};
+
+static struct k_thread rnb_thread;
+static K_KERNEL_STACK_MEMBER(rnb_stack, 800);
+#endif
+
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
 static void prepare_fds(void)
 {
 	if (conf.ipv6.udp.sock >= 0) {
@@ -121,7 +133,7 @@ static void wait(void)
 	}
 }
 
-static int start_udp_and_tcp(void)
+static int start(void)
 {
 	int ret;
 
@@ -139,7 +151,7 @@ static int start_udp_and_tcp(void)
 	return 0;
 }
 
-static int run_udp_and_tcp(void)
+static int run(void)
 {
 	int ret;
 
@@ -155,7 +167,7 @@ static int run_udp_and_tcp(void)
 	return 0;
 }
 
-static void stop_udp_and_tcp(void)
+static void stop(void)
 {
 	LOG_INF("Stopping...");
 
@@ -197,17 +209,6 @@ static void init_app(void)
 {
 	LOG_INF(APP_BANNER);
 
-#if defined(CONFIG_USERSPACE)
-	struct k_mem_partition *parts[] = {
-#if Z_LIBC_PARTITION_EXISTS
-		&z_libc_partition,
-#endif
-		&app_partition
-	};
-
-	k_mem_domain_init(&app_domain, ARRAY_SIZE(parts), parts);
-#endif
-
 	if (IS_ENABLED(CONFIG_NET_CONNECTION_MANAGER)) {
 		net_mgmt_init_event_callback(&mgmt_cb,
 					     event_handler, EVENT_MASK);
@@ -223,43 +224,35 @@ static int start_client(void)
 {
 	int iterations = 0;
 	int i = 0;
-	int ret;
+	int ret = 0;
 
 	while (iterations == 0 || i < iterations) {
 		/* Wait for the connection. */
 		k_sem_take(&run_app, K_FOREVER);
 
-		ret = start_udp_and_tcp();
+		ret = start();
 
-		while (connected && (ret == 0)) {
-			ret = run_udp_and_tcp();
+		while (connected && (ret == 0))
+ 		{
+
+			ret = run();
 
 			if (iterations > 0) {
 				i++;
 				if (i >= iterations) {
 					break;
-
 				}
 			}
 		}
 
-		stop_udp_and_tcp();
+		stop();
 	}
 
 	return ret;
 }
 
-void main(void)
+static void echo_client_udp_thread(void *arg1, void *arg2, void *arg3)
 {
-#ifdef CONFIG_REDNODEBUS
-	init_rnb();
-
-	while (!is_rnb_connected())
-	{
-		k_sleep(K_MSEC(1000));
-	}
-#endif /* CONFIG_REDNODEBUS */
-
 	init_app();
 
 	if (!IS_ENABLED(CONFIG_NET_CONNECTION_MANAGER)) {
@@ -274,15 +267,124 @@ void main(void)
 		k_sem_give(&run_app);
 	}
 
-	k_thread_priority_set(k_current_get(), THREAD_PRIORITY);
-
-#if defined(CONFIG_USERSPACE)
-	k_thread_access_grant(k_current_get(), &run_app);
-	k_mem_domain_add_thread(&app_domain, k_current_get());
-
-	k_thread_user_mode_enter((k_thread_entry_t)start_client, NULL, NULL,
-				 NULL);
-#else
 	exit(start_client());
+}
+#endif
+
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+static void wait_rnb(void)
+{
+	wait_rnb_user_payload_reply();
+}
+
+static int start_rnb(void)
+{
+	int ret;
+
+	LOG_INF("Starting RedNodeBus user payload...");
+
+	ret = start_rnb_user_payload();
+	if (ret < 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static int run_rnb(void)
+{
+	int ret;
+
+	wait_rnb();
+
+	ret = process_rnb_user_payload();
+	if (ret < 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static void stop_rnb(void)
+{
+	LOG_INF("Stopping RedNodeBus user payload...");
+
+	stop_rnb_user_payload();
+}
+
+static void init_app_rnb(void)
+{
+
+}
+
+static int start_client_rnb(void)
+{
+	int iterations = 0;
+	int i = 0;
+	int ret = 0;
+
+	while (iterations == 0 || i < iterations) {
+		ret = start_rnb();
+
+		while (ret == 0)
+ 		{
+			ret = run_rnb();
+
+			if (iterations > 0) {
+				i++;
+				if (i >= iterations) {
+					break;
+				}
+			}
+		}
+
+		stop_rnb();
+	}
+
+	return ret;
+}
+
+static void echo_client_rnb_thread(void *arg1, void *arg2, void *arg3)
+{
+	init_app_rnb();
+
+	exit(start_client_rnb());
+}
+#endif
+
+void main(void)
+{
+#ifdef CONFIG_REDNODEBUS
+	init_rnb();
+
+	while (!is_rnb_connected())
+	{
+		k_sleep(K_MSEC(1000));
+	}
+#endif /* CONFIG_REDNODEBUS */
+
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
+	k_thread_create(&udp_thread,
+			udp_stack,
+			K_THREAD_STACK_SIZEOF(udp_stack),
+			echo_client_udp_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(7),
+			0,
+			K_NO_WAIT);
+#endif
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+	k_thread_create(&rnb_thread,
+			rnb_stack,
+			K_THREAD_STACK_SIZEOF(rnb_stack),
+			echo_client_rnb_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(7),
+			0,
+			K_NO_WAIT);
 #endif
 }

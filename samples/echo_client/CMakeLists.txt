@@ -8,7 +8,7 @@ list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 string(REPLACE " " ";" OVERLAY_CONFIG_LIST "${OVERLAY_CONFIG}")
 if("overlay-ot-rnb.conf" IN_LIST OVERLAY_CONFIG_LIST)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
-endif()
+endif ()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
@@ -21,6 +21,7 @@ target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 target_sources_ifdef(CONFIG_NET_UDP app PRIVATE src/udp.c)
 target_sources_ifdef(CONFIG_NET_TCP app PRIVATE src/tcp.c)
 target_sources_ifdef(CONFIG_NET_VLAN app PRIVATE src/vlan.c)
+target_sources_ifdef(CONFIG_USE_REDNODEBUS_USER_PAYLOAD app PRIVATE src/rnb-user-payload.c)
 target_include_directories_ifdef(CONFIG_REDNODEBUS app PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/src)
 target_sources_ifdef(CONFIG_REDNODEBUS app PRIVATE

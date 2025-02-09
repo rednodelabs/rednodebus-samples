@@ -72,12 +72,30 @@ char lorem_ipsum[] =
 
 const int ipsum_len = sizeof(lorem_ipsum) - 1;
 
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
 struct configs conf = {
     .ipv6 = {
 	.proto = "IPv6",
 	.udp.sock = INVALID_SOCK},
 };
 
+static struct k_thread udp_thread;
+static K_KERNEL_STACK_MEMBER(udp_stack, 800);
+#endif
+
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+struct configs_rnb conf_rnb = {
+	.rnb = {
+		.proto = "RNB",
+		.rnb_user_payload.mtu = REDNODEBUS_USER_PAYLOAD_MAX_LENGTH,
+	}
+};
+
+static struct k_thread rnb_thread;
+static K_KERNEL_STACK_MEMBER(rnb_stack, 800);
+#endif
+
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
 static void init_app(void)
 {
 	conf.ipv6.udp.mtu = MTU_SIZE;
@@ -97,7 +115,8 @@ static int start_client(void)
 {
 	int iterations = 0;
 	int i = 0;
-	int ret;
+ 	int ret, rc;
+	static int packets_sent = 0;
 
 	while (iterations == 0 || i < iterations)
 	{
@@ -105,7 +124,16 @@ static int start_client(void)
 
 		while (ret == 0)
 		{
-			send_udp_data(&conf.ipv6);
+			memcpy(&lorem_ipsum[UID_CHARS + SESSION_RAND_CHARS], &packets_sent, sizeof(packets_sent));
+			rc = send_udp_data(&conf.ipv6);
+			if(rc < 0)
+			{
+				LOG_ERR("Failed to send data");
+			}
+			else
+			{
+				packets_sent++;
+			}
 
 			if (iterations > 0)
 			{
@@ -129,6 +157,84 @@ static int start_client(void)
 	return ret;
 }
 
+static void socket_test_udp_thread(void *arg1, void *arg2, void *arg3)
+{
+	init_app();
+
+	exit(start_client());
+}
+#endif
+
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+static void init_app_rnb(void)
+{
+#if defined(CONFIG_REDNODEBUS)
+	uint64_t euid = 0;
+	rnb_utils_get_euid(&euid);
+
+	sprintf(lorem_ipsum, "%04X%04X", (uint32_t)(euid >> 32), (uint32_t)euid);
+
+	int session_rand = sys_rand32_get();
+	memcpy(&lorem_ipsum[UID_CHARS], &session_rand, sizeof(session_rand));
+#endif
+}
+
+static int start_client_rnb(void)
+{
+	int iterations = 0;
+	int i = 0;
+	int ret, rc;
+	static int packets_sent = 0;
+
+	while (iterations == 0 || i < iterations)
+	{
+		ret = start_rnb_user_payload();
+
+		while (ret == 0)
+		{
+			memcpy(&lorem_ipsum[UID_CHARS + SESSION_RAND_CHARS], &packets_sent, sizeof(packets_sent));
+			conf_rnb.rnb.rnb_user_payload.transmitting = UDP_TRANSMISSION_BYTES % ipsum_len;
+			memcpy(&conf_rnb.rnb.rnb_user_payload.rnb_user_payload_params.user_payload, lorem_ipsum, conf_rnb.rnb.rnb_user_payload.transmitting);
+			rc = send_rnb_data(&conf_rnb.rnb);
+			if(rc < 0)
+			{
+				LOG_ERR("Failed to send data");
+			}
+			else
+			{
+				packets_sent++;
+			}
+
+			if (iterations > 0)
+			{
+				i++;
+				if (i >= iterations)
+				{
+					break;
+				}
+			}
+			if (rnb_role == REDNODEBUS_USER_ROLE_TAG)
+			{
+				k_sleep(K_MSEC(UDP_TRANSMISSION_PERIOD_TAG_MSEC));
+			}
+			else
+			{
+				k_sleep(K_MSEC(UDP_TRANSMISSION_PERIOD_MSEC));
+			}
+		}
+		stop_rnb_user_payload();
+	}
+	return ret;
+}
+
+static void socket_test_rnb_thread(void *arg1, void *arg2, void *arg3)
+{
+	init_app_rnb();
+
+	exit(start_client_rnb());
+}
+#endif
+
 void main(void)
 {
 #ifdef CONFIG_REDNODEBUS
@@ -140,9 +246,28 @@ void main(void)
 	}
 #endif /* CONFIG_REDNODEBUS */
 
-	init_app();
-
-	k_thread_priority_set(k_current_get(), THREAD_PRIORITY);
-
-	exit(start_client());
+#if !defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD_ONLY)
+	k_thread_create(&udp_thread,
+			udp_stack,
+			K_THREAD_STACK_SIZEOF(udp_stack),
+			socket_test_udp_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(7),
+			0,
+			K_NO_WAIT);
+#endif
+#if defined(CONFIG_USE_REDNODEBUS_USER_PAYLOAD)
+	k_thread_create(&rnb_thread,
+			rnb_stack,
+			K_THREAD_STACK_SIZEOF(rnb_stack),
+			socket_test_rnb_thread,
+			NULL,
+			NULL,
+			NULL,
+			K_PRIO_PREEMPT(7),
+			0,
+			K_NO_WAIT);
+#endif
 }

@@ -11,3 +11,12 @@ tests:
     extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf
     build_only: true
     tags: ci_build
+  sample.accelerometer.rnb.rnb_user_payload:
+    platform_allow: decawave_dwm1001_dev qorvo_dwm3001c_dev rnl_w1
+    integration_platforms:
+      - decawave_dwm1001_dev
+      - qorvo_dwm3001c_dev
+      - rnl_w1
+    extra_args: OVERLAY_CONFIG=overlay-ot-rnb.conf;overlay-rnb-user-payload.conf
+    build_only: true
+    tags: ci_build

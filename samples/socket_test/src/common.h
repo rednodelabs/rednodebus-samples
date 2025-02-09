@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <net/ieee802154_radio.h>
 
 /* Value of 0 will cause the IP stack to select next free port */
 #define MY_PORT 0
@@ -34,10 +35,22 @@ struct data
 		uint32_t mtu;
 	} udp;
 };
+struct data_rnb {
+	const char *proto;
+
+	struct {
+		struct rednodebus_user_payload_params rnb_user_payload_params;
+		uint32_t transmitting;
+		uint32_t mtu;
+	} rnb_user_payload;
+};
 
 struct configs
 {
 	struct data ipv6;
+};
+struct configs_rnb {
+	struct data_rnb rnb;
 };
 
 #if !defined(CONFIG_NET_CONFIG_PEER_IPV6_ADDR)
@@ -51,3 +64,7 @@ extern struct configs conf;
 int start_udp(void);
 void stop_udp(void);
 int send_udp_data(struct data *data);
+
+int start_rnb_user_payload(void);
+void stop_rnb_user_payload(void);
+int send_rnb_data(struct data_rnb *data);
