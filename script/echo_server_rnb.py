@@ -2,9 +2,10 @@ import random
 import json
 from paho.mqtt import client as mqtt_client
 
-
-broker = 'raspberrypigw.local'
+# Update the following variables with your specific values
+broker = 'localhost'
 port = 1883
+
 topic = "rednodebus/events/#"
 # Generate a Client ID with the subscribe prefix.
 client_id = f'subscribe-{random.randint(0, 100)}'
@@ -35,6 +36,7 @@ def subscribe(client: mqtt_client):
         msg = json.loads(msg.payload.decode())
         if msg["name"] == "user_data":
             msg["name"] = "send_user_data"
+            msg["flip"] = "off"
             print("Echoing " + str(int(len(msg["data"])/2)) + " bytes back to " + str(msg["uid"]))
             msg = json.dumps(msg)
             client.publish("rednodebus/commands", msg)

@@ -4,6 +4,10 @@ import random
 import json
 from paho.mqtt import client as mqtt_client
 
+# Update the following variables with your specific values
+broker = 'localhost'
+port = 1883
+
 euid_bytes = 8
 session_rand_bytes = 4
 ctr_bytes = 4
@@ -11,8 +15,6 @@ ctr_bytes = 4
 table_header = ["UID", "X (m/s²)", "Y (m/s²)", "Z (m/s²)", "Packets received", "Packets lost", "Error rate (%)", "Bytes received", "Bitrate (Bps)"]
 stats_dic = {}
 
-broker = 'raspberrypigw.local'
-port = 1883
 topic = "rednodebus/events/#"
 # Generate a Client ID with the subscribe prefix.
 client_id = f'subscribe-{random.randint(0, 100)}'
